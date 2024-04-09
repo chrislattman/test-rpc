@@ -1,0 +1,5 @@
+server
+test_*
+*.so
+.DS_Store
+.vscode/
