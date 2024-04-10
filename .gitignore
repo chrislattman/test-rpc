@@ -1,5 +1,7 @@
 server
-test_*
+local
+remote
 *.so
+*.class
 .DS_Store
 .vscode/

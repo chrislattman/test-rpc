@@ -1,22 +1,52 @@
 CFLAGS=-Wall -Wextra -std=c99
 
-local: client_stubs test_local
-	LD_PRELOAD=./librpc.so ./test_local
+test_local: rpc_stubs local
+	LD_PRELOAD=./librpc.so ./local
 
-remote: server client_stubs test_remote
-	LD_PRELOAD=./librpc.so ./test_remote
+test_local_java: rpc_stubs_java local_java
+	java Local
+
+test_remote: rpc_stubs remote test_server
+	LD_PRELOAD=./librpc.so ./remote
+
+test_remote_java: rpc_stubs_java remote_java test_server_java
+	java Remote
+
+test_server: server
+	./server &
+
+test_server_java: server_java
+	rmiregistry &
+	sleep 1
+	java -Djava.rmi.server.codebase=file:. Server &
+	sleep 1
 
 server:
 	gcc $(CFLAGS) -pedantic -o server server.c
 
-client_stubs:
+server_java: rpc_stubs_java
+	javac Server.java
+
+rpc_stubs:
 	gcc $(CFLAGS) -shared -fpic -o librpc.so rpc_stubs.c
 
-test_local:
-	gcc $(CFLAGS) -pedantic -o test_local test_local.c
+rpc_stubs_java:
+	javac RPCStubs.java ReadResponse.java
 
-test_remote:
-	gcc $(CFLAGS) -pedantic -o test_remote test_remote.c
+local:
+	gcc $(CFLAGS) -pedantic -o local local.c
+
+local_java:
+	javac Local.java
+
+remote:
+	gcc $(CFLAGS) -pedantic -o remote remote.c
+
+remote_java:
+	javac Remote.java
 
 clean:
-	rm -f server test_local test_remote librpc.so
+	rm -f server local remote *.so *.class
+	pkill -9 server || true
+	pkill -9 rmiregistry || true
+	pkill -9 java || true

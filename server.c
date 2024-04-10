@@ -270,7 +270,7 @@ static void signal_handler(__attribute__((unused)) int signum)
 }
 
 /**
- * @brief Main server loop for the web server.
+ * @brief Main server loop for the RPC server.
  *
  * Request buffers look like
  *
