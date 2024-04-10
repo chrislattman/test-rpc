@@ -64,13 +64,17 @@ static int connect_to_server(void)
         port_number = (unsigned short) atoi(port_string);
     }
 
+    if (real_close == NULL) {
+        real_close = dlsym(RTLD_NEXT, "close");
+    }
+
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         fprintf(stderr, "socket: %s\n", strerror(errno));
         return -1;
     }
     if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &reuseaddr, sizeof(int)) < 0) {
         fprintf(stderr, "setsockopt: %s\n", strerror(errno));
-        close(sock);
+        real_close(sock);
         return -1;
     }
     connection.sin_family = AF_INET;
@@ -78,7 +82,7 @@ static int connect_to_server(void)
     connection.sin_addr.s_addr = inet_addr(host_string);
     if (connect(sock, (struct sockaddr *) &connection, (socklen_t) sizeof(struct sockaddr)) < 0) {
         fprintf(stderr, "connect: %s\n", strerror(errno));
-        close(sock);
+        real_close(sock);
         return -1;
     }
 
@@ -99,7 +103,7 @@ static int send_data(unsigned char *buf, size_t buf_size)
     }
     if (send(sock, buf, buf_size, 0) < 0) {
         fprintf(stderr, "send: %s\n", strerror(errno));
-        close(sock);
+        real_close(sock);
         return -1;
     }
     // not closing the socket on successful send until recv_data is called
@@ -109,7 +113,7 @@ static int send_data(unsigned char *buf, size_t buf_size)
 /**
  * @brief Receives bytes from the RPC server.
  *
- * @param buf byte buffer
+ * @param buf pointer to byte buffer
  * @param bytes_to_read number of bytes to receive
  * @return 0 on success or -1 on error
  */
@@ -119,10 +123,13 @@ static int recv_data(unsigned char **buf, size_t bytes_to_read)
     // that we are already connected to the server
     if (recv(sock, *buf, bytes_to_read, 0) < 0) {
         fprintf(stderr, "recv: %s\n", strerror(errno));
-        close(sock);
+        real_close(sock);
         return -1;
     }
-    close(sock);
+    if (real_close(sock) < 0) {
+        fprintf(stderr, "close: %s\n", strerror(errno));
+        return -1;
+    }
     return 0;
 }
 
