@@ -19,11 +19,16 @@ public class Server implements RPCStubs {
     }
 
     public static void main(String args[]) {
+        String port = System.getenv("RPC_PORT");
+        int portNumber = 1099;
+        if (port != null) {
+            portNumber = Integer.parseInt(port);
+        }
         try {
             Server obj = new Server();
             // the port in exportObject can be ephemeral, what a client connects to is the rmiregistry port
             RPCStubs stub = (RPCStubs) UnicastRemoteObject.exportObject(obj, 0);
-            Registry registry = LocateRegistry.getRegistry();
+            Registry registry = LocateRegistry.getRegistry(portNumber);
             registry.bind("RPCStubs", stub);
         } catch (Exception e) {
             System.err.println("Server exception: " + e.toString());

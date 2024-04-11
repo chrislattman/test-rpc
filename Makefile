@@ -22,7 +22,7 @@ test_server: server
 	./server &
 
 test_server_java: server_java
-	rmiregistry &
+	rmiregistry $(RPC_PORT) &
 	sleep 1
 	java -Djava.rmi.server.codebase=file:. Server &
 	sleep 1

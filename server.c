@@ -291,6 +291,11 @@ int main(void)
     thread_arg argument;
 
     port_string = getenv("RPC_PORT");
+    if (port_string != NULL) {
+        port_number = (unsigned short) atoi(port_string);
+    } else {
+        port_number = PORT_NUMBER;
+    }
 
     if ((server_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         fprintf(stderr, "socket: %s\n", strerror(errno));
@@ -302,12 +307,7 @@ int main(void)
     }
 
     server_connection.sin_family = AF_INET;
-    if (port_string != NULL) {
-        port_number = (unsigned short) atoi(port_string);
-        server_connection.sin_port = htons(port_number);
-    } else {
-        server_connection.sin_port = htons(PORT_NUMBER);
-    }
+    server_connection.sin_port = htons(port_number);
     server_connection.sin_addr.s_addr = htonl(INADDR_ANY);
     if (bind(server_socket, (struct sockaddr *) &server_connection,
             (socklen_t) sizeof(server_connection)) < 0) {
