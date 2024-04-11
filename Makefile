@@ -40,7 +40,7 @@ rpc_stubs:
 	gcc $(CFLAGS) -shared -fpic -o librpc.so rpc_stubs.c
 
 rpc_stubs_java:
-	javac RPCStubs.java ReadResponse.java
+	javac RPCStubs.java
 
 local:
 	gcc $(CFLAGS) -pedantic -o local local.c
@@ -59,4 +59,4 @@ clean:
 	pkill -9 server || true
 	pkill -9 rmiregistry || true
 	pkill -9 java || true
-	pkill -9 python3
+	pkill -9 python3 || true

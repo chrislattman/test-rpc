@@ -16,13 +16,13 @@ public class Remote {
 
             int fd = stub.open("test_file.txt", "rw");
             byte[] buf = new byte[200];
-            ReadResponse resp = stub.read(fd, 5);
-            System.arraycopy(resp.b, 0, buf, 0, 5);
-            System.out.println(resp.status + " " + new String(buf, StandardCharsets.UTF_8));
+            byte[] resp = stub.read(fd, 5);
+            System.arraycopy(resp, 0, buf, 0, 5);
+            System.out.println(resp.length + " " + new String(buf, StandardCharsets.UTF_8));
             stub.seek(fd, 0);
-            resp = stub.read(fd, 6);
-            System.arraycopy(resp.b, 0, buf, 5, 6);
-            System.out.println(resp.status + " " + new String(buf, StandardCharsets.UTF_8));
+            byte[] resp2 = stub.read(fd, 6);
+            System.arraycopy(resp2, 0, buf, 5, 6);
+            System.out.println(resp2.length + " " + new String(buf, StandardCharsets.UTF_8));
             stub.write(fd, "word".getBytes(StandardCharsets.UTF_8), 0, 4);
             stub.close(fd);
         } catch (Exception e) {

@@ -45,12 +45,14 @@ public class Server implements RPCStubs {
     }
 
     @Override
-    public ReadResponse read(int fd, int len) throws RemoteException, IOException {
+    public byte[] read(int fd, int len) throws RemoteException, IOException {
         RandomAccessFile file = files.get(fd);
-        ReadResponse resp = new ReadResponse();
-        resp.b = new byte[len];
-        resp.status = file.read(resp.b);
-        return resp;
+        byte[] result = new byte[len];
+        int status = file.read(result);
+        if (status < 0) {
+            result = null;
+        }
+        return result;
     }
 
     @Override

@@ -32,15 +32,13 @@ public interface RPCStubs extends Remote {
      * Reads up to len bytes of data from this file into an array of bytes.
      * @param fd hash code of the RandomAccessFile to read from
      * @param len the maximum number of bytes read
-     * @return a ReadResponse object which includes the buffer and the status,
-     * which is the total number of bytes read into the buffer, or -1 if there
-     * is no more data because the end of this file has been reached
+     * @return buffer with up to len bytes or null if no data was read
      * @throws RemoteException if the remote call fails
      * @throws IOException if the first byte cannot be read for any reason other
      * than end of file, or if the random access file has been closed, or if
      * some other I/O error occurs
      */
-    ReadResponse read(int fd, int len) throws RemoteException, IOException;
+    byte[] read(int fd, int len) throws RemoteException, IOException;
 
     /**
      * Writes b.length bytes from the specified byte array to this file,
