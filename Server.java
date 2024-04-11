@@ -1,4 +1,5 @@
 import java.rmi.registry.Registry;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -74,8 +75,14 @@ public class Server implements RPCStubs {
     }
 
     @Override
-    public long size(int fd) throws RemoteException, IOException {
-        RandomAccessFile file = files.get(fd);
+    public long size(String name) throws RemoteException {
+        File file = new File(name);
         return file.length();
+    }
+
+    @Override
+    public long lastModifiedTime(String name) throws RemoteException {
+        File file = new File(name);
+        return file.lastModified();
     }
 }

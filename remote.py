@@ -1,5 +1,6 @@
 import os
 import rpyc
+import time
 
 PORT_NUMBER = 5000
 
@@ -14,6 +15,11 @@ else:
 
 conn = rpyc.connect(host, port_number)
 
+statbuf = conn.root.stat("test_file.txt")
+statbuf = os.stat_result(statbuf)
+print("File size (in bytes): " + str(statbuf.st_size))
+print("Last modified time: " + time.strftime("%a, %d %b %Y %X GMT",
+                                             time.gmtime(int(statbuf.st_mtime))))
 fd: int = conn.root.open("test_file.txt", os.O_RDWR)
 buf: bytes = conn.root.read(fd, 5)
 print(str(len(buf)) + " " + buf.decode())

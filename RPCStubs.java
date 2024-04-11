@@ -77,12 +77,23 @@ public interface RPCStubs extends Remote {
 
     /**
      * Returns the length of this file.
-     * @param fd hash code of the RandomAccessFile
+     * @param name the system-dependent filename
      * @return the length of this file, measured in bytes
      * @throws RemoteException if the remote call fails
      * @throws IOException if an I/O error occurs
      */
-    long size(int fd) throws RemoteException, IOException;
+    long size(String name) throws RemoteException;
 
-    // No native methods comparable to stat/fstat for RandomAccessFile objects
+    /**
+     * Returns the time that the file denoted by name was last modified.
+     * @param name the system-dependent filename
+     * @return A long value representing the time the file was last modified,
+     * measured in milliseconds since the epoch (00:00:00 GMT, January 1, 1970),
+     * or 0L if the file does not exist or if an I/O error occurs. The value may
+     * be negative indicating the number of milliseconds before the epoch
+     * @throws RemoteException if the remote call fails
+     */
+    long lastModifiedTime(String name) throws RemoteException;
+
+    // No native method comparable to fstat for RandomAccessFile objects
 }

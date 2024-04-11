@@ -1,5 +1,10 @@
 import os
+import time
 
+statbuf = os.stat("test_file.txt")
+print("File size (in bytes): " + str(statbuf.st_size))
+print("Last modified time: " + time.strftime("%a, %d %b %Y %X GMT",
+                                             time.gmtime(int(statbuf.st_mtime))))
 fd = os.open("test_file.txt", os.O_RDWR)
 buf = os.read(fd, 5)
 print(str(len(buf)) + " " + buf.decode())
