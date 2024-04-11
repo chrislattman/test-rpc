@@ -6,11 +6,17 @@ test_local: rpc_stubs local
 test_local_java: rpc_stubs_java local_java
 	java Local
 
+test_local_python:
+	python3 local.py
+
 test_remote: rpc_stubs remote test_server
 	LD_PRELOAD=./librpc.so ./remote
 
 test_remote_java: rpc_stubs_java remote_java test_server_java
 	java Remote
+
+test_remote_python: test_server_python
+	python3 remote.py
 
 test_server: server
 	./server &
@@ -20,6 +26,9 @@ test_server_java: server_java
 	sleep 1
 	java -Djava.rmi.server.codebase=file:. Server &
 	sleep 1
+
+test_server_python:
+	python3 server.py &
 
 server:
 	gcc $(CFLAGS) -pedantic -o server server.c
@@ -50,3 +59,4 @@ clean:
 	pkill -9 server || true
 	pkill -9 rmiregistry || true
 	pkill -9 java || true
+	pkill -9 python3
