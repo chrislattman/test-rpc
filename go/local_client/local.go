@@ -13,6 +13,7 @@ func main() {
 	fmt.Println("File size (in bytes):", statbuf.Size())
 	date := statbuf.ModTime().UTC().Format(time.RFC1123)
 	fmt.Println("Last modified time:", strings.Replace(date, "UTC", "GMT", 1))
+
 	file, _ := os.OpenFile("../test_file.txt", os.O_RDWR, 0644)
 	buf := make([]byte, 5)
 	status, _ := file.Read(buf)
@@ -22,5 +23,6 @@ func main() {
 	status, _ = file.Read(buf2)
 	fmt.Println(status, string(buf) + string(buf2))
 	file.Write([]byte("word"))
+	file.Sync()
 	file.Close()
 }

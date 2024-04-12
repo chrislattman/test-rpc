@@ -13,6 +13,7 @@ public class Local {
         SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z");
         sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
         System.out.println("Last modified time: " + sdf.format(new Date(f.lastModified())));
+
         try {
             RandomAccessFile file = new RandomAccessFile("test_file.txt", "rw");
             byte[] buf = new byte[200];
@@ -22,6 +23,7 @@ public class Local {
             status = file.read(buf, 5, 6);
             System.out.println(status + " " + new String(buf, StandardCharsets.UTF_8));
             file.write("word".getBytes(StandardCharsets.UTF_8), 0, 4);
+            file.getFD().sync();
             file.close();
         } catch (IOException e) {
             e.printStackTrace();

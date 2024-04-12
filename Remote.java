@@ -24,6 +24,7 @@ public class Remote {
             sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
             System.out.println("Last modified time: " + sdf.format(
                 new Date(stub.lastModifiedTime("test_file.txt"))));
+
             int fd = stub.open("test_file.txt", "rw");
             byte[] buf = new byte[200];
             byte[] resp = stub.read(fd, 5);
@@ -34,6 +35,7 @@ public class Remote {
             System.arraycopy(resp2, 0, buf, 5, 6);
             System.out.println(resp2.length + " " + new String(buf, StandardCharsets.UTF_8));
             stub.write(fd, "word".getBytes(StandardCharsets.UTF_8), 0, 4);
+            stub.fsync(fd);
             stub.close(fd);
         } catch (Exception e) {
             System.err.println("TestRemote exception: " + e.toString());

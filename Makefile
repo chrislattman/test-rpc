@@ -12,6 +12,12 @@ test_local_python:
 test_local_go:
 	cd go; go run local_client/local.go
 
+test_local_js:
+	node local.js
+
+test_local_rust:
+	cargo run
+
 test_remote: rpc_stubs remote test_server
 	LD_PRELOAD=./librpc.so ./remote
 
@@ -65,7 +71,7 @@ remote_java:
 	javac Remote.java
 
 clean:
-	rm -f server local remote *.so *.class
+	rm -rf server local remote *.so *.class target
 	pkill -9 server || true
 	pkill -9 rmiregistry || true
 	pkill -9 java || true

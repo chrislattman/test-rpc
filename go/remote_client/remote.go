@@ -43,6 +43,7 @@ func main() {
 	}
 	date := time.Unix(lastmodifiedtime_reply, 0).UTC().Format(time.RFC1123)
 	fmt.Println("Last modified time:", strings.Replace(date, "UTC", "GMT", 1))
+
 	open_args := &rpc_types.OpenArgs{Path: "../test_file.txt", Oflag: os.O_RDWR, Mode: 0644}
 	var fd uintptr
 	err = client.Call("Receiver.Open", open_args, &fd)
@@ -75,8 +76,13 @@ func main() {
 	if err != nil {
 		log.Fatal("rpc.Client.Call:", err)
 	}
-	close_args := &rpc_types.CloseArgs{Fildes: fd}
+	sync_args := &rpc_types.FsyncArgs{Fildes: fd}
 	var ret int
+	err = client.Call("Receiver.Fsync", sync_args, &ret)
+	if err != nil {
+		log.Fatal("rpc.Client.Call:", err)
+	}
+	close_args := &rpc_types.CloseArgs{Fildes: fd}
 	err = client.Call("Receiver.Close", close_args, &ret)
 	if err != nil {
 		log.Fatal("rpc.Client.Call:", err)

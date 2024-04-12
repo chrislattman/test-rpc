@@ -5,3 +5,4 @@ remote
 *.class
 .DS_Store
 .vscode/
+target/

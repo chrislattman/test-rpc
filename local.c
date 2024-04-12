@@ -17,13 +17,15 @@ int main(void)
     time_info = gmtime(&statbuf.st_mtime);
     strftime(date, sizeof(date), "%a, %d %b %Y %X GMT", time_info);
     printf("Last modified time: %s\n", date);
+
     fd = open("test_file.txt", O_RDWR);
     status = read(fd, buf, 5);
     printf("%ld %s\n", status, buf);
     lseek(fd, 0, SEEK_SET);
     status = read(fd, buf + 5, 6);
     printf("%ld %s\n", status, buf);
-    status = write(fd, "word", 4);
+    write(fd, "word", 4);
+    fsync(fd);
     close(fd);
 
     return 0;
