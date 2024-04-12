@@ -11,6 +11,9 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
+static const char *HOSTNAME = "127.0.0.1";
+static const char *PORT_NUMBER = "5000";
+
 typedef int (*open_t)(const char *, int, ...);
 typedef int (*close_t)(int);
 typedef ssize_t (*read_t)(int, void *, size_t);
@@ -55,11 +58,11 @@ static int connect_to_server(void)
     if (host_string == NULL || port_number == 0) {
         host_string = getenv("RPC_HOST");
         if (host_string == NULL) {
-            host_string = "127.0.0.1";
+            host_string = HOSTNAME;
         }
         port_string = getenv("RPC_PORT");
         if (port_string == NULL) {
-            port_string = "5000";
+            port_string = PORT_NUMBER;
         }
         port_number = (unsigned short) atoi(port_string);
     }

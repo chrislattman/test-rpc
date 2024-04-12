@@ -12,6 +12,7 @@ import java.util.HashMap;
  * Main server loop for RPC server.
  */
 public class Server implements RPCStubs {
+    private static final int PORT_NUMBER = 1099;
     private HashMap<Integer, RandomAccessFile> files;
 
     public Server() {
@@ -20,7 +21,7 @@ public class Server implements RPCStubs {
 
     public static void main(String args[]) {
         String port = System.getenv("RPC_PORT");
-        int portNumber = 1099;
+        int portNumber = PORT_NUMBER;
         if (port != null) {
             portNumber = Integer.parseInt(port);
         }

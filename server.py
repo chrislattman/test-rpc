@@ -1,8 +1,11 @@
 import os
 import rpyc
 from rpyc.utils.server import ThreadedServer
+import signal
+import sys
 
 PORT_NUMBER = 5000
+server: ThreadedServer
 
 
 class Server(rpyc.Service):
@@ -33,11 +36,20 @@ class Server(rpyc.Service):
         return os.fstat(fildes)
 
 
-if __name__ == "__main__":
+def signal_handler(signum, frame) -> None:
+    server.close()
+    sys.exit(0)
+
+def main():
     port_string = os.getenv("RPC_PORT")
     if port_string is not None:
         port_number = int(port_string)
     else:
         port_number = PORT_NUMBER
-    t = ThreadedServer(Server, port=port_number)
-    t.start()
+    signal.signal(signal.SIGINT, signal_handler)
+    global server
+    server = ThreadedServer(Server, port=port_number)
+    server.start()
+
+if __name__ == "__main__":
+    main()

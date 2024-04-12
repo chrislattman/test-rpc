@@ -9,6 +9,9 @@ test_local_java: rpc_stubs_java local_java
 test_local_python:
 	python3 local.py
 
+test_local_go:
+	cd go; go run local_client/local.go
+
 test_remote: rpc_stubs remote test_server
 	LD_PRELOAD=./librpc.so ./remote
 
@@ -17,6 +20,9 @@ test_remote_java: rpc_stubs_java remote_java test_server_java
 
 test_remote_python: test_server_python
 	python3 remote.py
+
+test_remote_go: test_server_go
+	cd go; go run remote_client/remote.go
 
 test_server: server
 	./server &
@@ -29,6 +35,10 @@ test_server_java: server_java
 
 test_server_python:
 	python3 server.py &
+
+test_server_go:
+	cd go; go run rpc_server/server.go &
+	sleep 1
 
 server:
 	gcc $(CFLAGS) -pedantic -o server server.c
@@ -60,3 +70,4 @@ clean:
 	pkill -9 rmiregistry || true
 	pkill -9 java || true
 	pkill -9 python3 || true
+	pkill -9 go || true

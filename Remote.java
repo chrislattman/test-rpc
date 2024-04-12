@@ -6,10 +6,12 @@ import java.util.Date;
 import java.util.TimeZone;
 
 public class Remote {
+    private static final int PORT_NUMBER = 1099;
+
     public static void main(String[] args) {
         String host = System.getenv("RPC_HOST");
         String port = System.getenv("RPC_PORT");
-        int portNumber = 1099;
+        int portNumber = PORT_NUMBER;
         if (port != null) {
             portNumber = Integer.parseInt(port);
         }

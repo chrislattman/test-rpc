@@ -2,12 +2,13 @@ import os
 import rpyc
 import time
 
+HOSTNAME = "127.0.0.1"
 PORT_NUMBER = 5000
 
 host = os.getenv("RPC_HOST")
 port = os.getenv("RPC_PORT")
 if host is None:
-    host = "127.0.0.1"
+    host = HOSTNAME
 if port is None:
     port_number = PORT_NUMBER
 else:
@@ -28,3 +29,4 @@ buf2: bytes = conn.root.read(fd, 6)
 print(str(len(buf2)) + " " + buf.decode() + buf2.decode())
 status = conn.root.write(fd, "word".encode())
 conn.root.close(fd)
+conn.close()
