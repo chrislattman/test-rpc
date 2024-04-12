@@ -93,6 +93,12 @@ func (t *Receiver) LastModifiedTime(args *rpc_types.LastModifiedTimeArgs, reply 
 	return nil
 }
 
+func (t *Receiver) Fsync(args *rpc_types.FsyncArgs, reply *int) error {
+	fildes := args.Fildes
+	file := files[fildes]
+	return file.Sync()
+}
+
 func main() {
 	port := os.Getenv("RPC_PORT")
 	if len(port) == 0 {

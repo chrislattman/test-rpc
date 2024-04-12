@@ -21,6 +21,7 @@ typedef ssize_t (*write_t)(int, const void *, size_t);
 typedef off_t (*lseek_t)(int, off_t, int);
 typedef int (*stat_t)(const char *restrict, struct stat *restrict);
 typedef int (*fstat_t)(int, struct stat *);
+typedef int (*fsync_t)(int);
 
 static open_t real_open = NULL;
 static close_t real_close = NULL;
@@ -29,6 +30,7 @@ static write_t real_write = NULL;
 static lseek_t real_lseek = NULL;
 static stat_t real_stat = NULL;
 static fstat_t real_fstat = NULL;
+static fsync_t real_fsync = NULL;
 
 static const char *host_string = NULL;
 static unsigned short port_number = 0;
@@ -43,6 +45,7 @@ enum function {
     LSEEK,
     STAT,
     FSTAT,
+    FSYNC,
 };
 
 /**
@@ -141,7 +144,8 @@ int open(const char *path, int oflag, ...)
     va_list args;
     mode_t mode;
     size_t request_payload_size, path_size, response_payload_size;
-    unsigned char *request_buf = NULL, *response_payload = NULL;
+    unsigned char *request_buf = NULL;
+    unsigned char response_payload[sizeof(int)];
     int status, fildes = -1;
 
     if (real_open == NULL) {
@@ -184,12 +188,7 @@ int open(const char *path, int oflag, ...)
         }
 
         // receive response payload
-        response_payload_size = sizeof(int);
-        response_payload = malloc(response_payload_size);
-        if (response_payload == NULL) {
-            fprintf(stderr, "malloc: %s\n", strerror(errno));
-            goto cleanup;
-        }
+        response_payload_size = sizeof(response_payload);
         status = recv_data(&response_payload, response_payload_size);
         if (status < 0) {
             goto cleanup;
@@ -199,22 +198,22 @@ int open(const char *path, int oflag, ...)
         memcpy(&fildes, response_payload, sizeof(int));
     } else { // calling open locally
         if (oflag == O_CREAT) {
-            fildes = real_open(path, oflag, mode);
+            return real_open(path, oflag, mode);
         } else {
-            fildes = real_open(path, oflag);
+            return real_open(path, oflag);
         }
     }
 
 cleanup:
     free(request_buf);
-    free(response_payload);
     return fildes;
 }
 
 int close(int fildes)
 {
     size_t request_payload_size, response_payload_size;
-    unsigned char *request_buf = NULL, *response_payload = NULL;
+    unsigned char request_buf[sizeof(size_t) + sizeof(unsigned char) + sizeof(int)];
+    unsigned char response_payload[sizeof(int)];
     int status, error_code = -1;
 
     if (real_close == NULL) {
@@ -222,13 +221,7 @@ int close(int fildes)
     }
 
     if (fildes > INT_MAX / 2) { // calling close remotely
-        // create request buffer, including request payload
-        request_payload_size = sizeof(unsigned char) + sizeof(int);
-        request_buf = malloc(sizeof(size_t) + request_payload_size);
-        if (request_buf == NULL) {
-            fprintf(stderr, "malloc: %s\n", strerror(errno));
-            goto cleanup;
-        }
+        request_payload_size = sizeof(request_buf) - sizeof(size_t);
 
         // prepend payload size and close function code
         memcpy(request_buf, &request_payload_size, sizeof(size_t));
@@ -238,37 +231,30 @@ int close(int fildes)
         memcpy(request_buf + sizeof(size_t) + sizeof(unsigned char), &fildes, sizeof(int));
         status = send_data(request_buf, sizeof(size_t) + request_payload_size);
         if (status < 0) {
-            goto cleanup;
+            return error_code;
         }
 
         // receive response payload
-        response_payload_size = sizeof(int);
-        response_payload = malloc(response_payload_size);
-        if (response_payload == NULL) {
-            fprintf(stderr, "malloc: %s\n", strerror(errno));
-            goto cleanup;
-        }
+        response_payload_size = sizeof(response_payload);
         status = recv_data(&response_payload, response_payload_size);
         if (status < 0) {
-            goto cleanup;
+            return error_code;
         }
 
         // extract error_code from response payload
         memcpy(&error_code, response_payload, sizeof(int));
     } else { // calling close locally
-        error_code = real_close(fildes);
+        return real_close(fildes);
     }
 
-cleanup:
-    free(request_buf);
-    free(response_payload);
     return error_code;
 }
 
 ssize_t read(int fildes, void *buf, size_t nbyte)
 {
     size_t request_payload_size, response_payload_size;
-    unsigned char *request_buf = NULL, *response_payload = NULL;
+    unsigned char request_buf[sizeof(size_t) + sizeof(unsigned char) + sizeof(int) + sizeof(size_t)];
+    unsigned char *response_payload = NULL;
     int status;
     ssize_t io_retval = -1;
 
@@ -277,13 +263,7 @@ ssize_t read(int fildes, void *buf, size_t nbyte)
     }
 
     if (fildes > INT_MAX / 2) { // calling read remotely
-        // create request buffer, including request payload
-        request_payload_size = sizeof(unsigned char) + sizeof(int) + sizeof(size_t);
-        request_buf = malloc(sizeof(size_t) + request_payload_size);
-        if (request_buf == NULL) {
-            fprintf(stderr, "malloc: %s\n", strerror(errno));
-            goto cleanup;
-        }
+        request_payload_size = sizeof(request_buf) - sizeof(size_t);
 
         // prepend payload size and read function code
         memcpy(request_buf, &request_payload_size, sizeof(size_t));
@@ -294,7 +274,7 @@ ssize_t read(int fildes, void *buf, size_t nbyte)
         memcpy(request_buf + sizeof(size_t) + sizeof(unsigned char) + sizeof(int), &nbyte, sizeof(size_t));
         status = send_data(request_buf, sizeof(size_t) + request_payload_size);
         if (status < 0) {
-            goto cleanup;
+            return io_retval;
         }
 
         // receive response payload
@@ -313,11 +293,10 @@ ssize_t read(int fildes, void *buf, size_t nbyte)
         memcpy(&io_retval, response_payload, sizeof(ssize_t));
         memcpy(buf, response_payload + sizeof(ssize_t), nbyte);
     } else { // calling read locally
-        io_retval = real_read(fildes, buf, nbyte);
+        return real_read(fildes, buf, nbyte);
     }
 
 cleanup:
-    free(request_buf);
     free(response_payload);
     return io_retval;
 }
@@ -325,7 +304,8 @@ cleanup:
 ssize_t write(int fildes, const void *buf, size_t nbyte)
 {
     size_t request_payload_size, response_payload_size;
-    unsigned char *request_buf = NULL, *response_payload = NULL;
+    unsigned char *request_buf = NULL;
+    unsigned char response_payload[sizeof(ssize_t)];
     int status;
     ssize_t io_retval = -1;
 
@@ -356,12 +336,7 @@ ssize_t write(int fildes, const void *buf, size_t nbyte)
         }
 
         // receive response payload
-        response_payload_size = sizeof(ssize_t);
-        response_payload = malloc(response_payload_size);
-        if (response_payload == NULL) {
-            fprintf(stderr, "malloc: %s\n", strerror(errno));
-            goto cleanup;
-        }
+        response_payload_size = sizeof(response_payload);
         status = recv_data(&response_payload, response_payload_size);
         if (status < 0) {
             goto cleanup;
@@ -370,19 +345,19 @@ ssize_t write(int fildes, const void *buf, size_t nbyte)
         // extract io_retval from response payload
         memcpy(&io_retval, response_payload, sizeof(ssize_t));
     } else { // calling write locally
-        io_retval = real_write(fildes, buf, nbyte);
+        return real_write(fildes, buf, nbyte);
     }
 
 cleanup:
     free(request_buf);
-    free(response_payload);
     return io_retval;
 }
 
 off_t lseek(int fildes, off_t offset, int whence)
 {
     size_t request_payload_size, response_payload_size;
-    unsigned char *request_buf = NULL, *response_payload = NULL;
+    unsigned char request_buf[sizeof(size_t) + sizeof(unsigned char) + sizeof(int) + sizeof(off_t) + sizeof(int)];
+    unsigned char response_payload[sizeof(off_t)];
     int status;
     off_t resulting_offset = -1;
 
@@ -391,13 +366,7 @@ off_t lseek(int fildes, off_t offset, int whence)
     }
 
     if (fildes > INT_MAX / 2) { // calling lseek remotely
-        // create request buffer, including request payload
-        request_payload_size = sizeof(unsigned char) + sizeof(int) + sizeof(off_t) + sizeof(int);
-        request_buf = malloc(sizeof(size_t) + request_payload_size);
-        if (request_buf == NULL) {
-            fprintf(stderr, "malloc: %s\n", strerror(errno));
-            goto cleanup;
-        }
+        request_payload_size = sizeof(request_buf) - sizeof(size_t);
 
         // prepend payload size and lseek function code
         memcpy(request_buf, &request_payload_size, sizeof(size_t));
@@ -409,37 +378,31 @@ off_t lseek(int fildes, off_t offset, int whence)
         memcpy(request_buf + sizeof(size_t) + sizeof(unsigned char) + sizeof(int) + sizeof(off_t), &whence, sizeof(int));
         status = send_data(request_buf, sizeof(size_t) + request_payload_size);
         if (status < 0) {
-            goto cleanup;
+            return resulting_offset;
         }
 
         // receive response payload
-        response_payload_size = sizeof(off_t);
-        response_payload = malloc(response_payload_size);
-        if (response_payload == NULL) {
-            fprintf(stderr, "malloc: %s\n", strerror(errno));
-            goto cleanup;
-        }
+        response_payload_size = sizeof(response_payload);
         status = recv_data(&response_payload, response_payload_size);
         if (status < 0) {
-            goto cleanup;
+            return resulting_offset;
         }
 
         // extract resulting_offset from response payload
         memcpy(&resulting_offset, response_payload, sizeof(off_t));
     } else { // calling lseek locally
-        resulting_offset = real_lseek(fildes, offset, whence);
+        return real_lseek(fildes, offset, whence);
     }
 
 cleanup:
-    free(request_buf);
-    free(response_payload);
     return resulting_offset;
 }
 
 int stat(const char *restrict path, struct stat *restrict statbuf)
 {
     size_t request_payload_size, path_size, response_payload_size;
-    unsigned char *request_buf = NULL, *response_payload = NULL;
+    unsigned char *request_buf = NULL;
+    unsigned char response_payload[sizeof(int) + sizeof(struct stat)];
     int status, error_code = -1;
 
     if (real_stat == NULL) {
@@ -468,12 +431,7 @@ int stat(const char *restrict path, struct stat *restrict statbuf)
         }
 
         // receive response payload
-        response_payload_size = sizeof(int) + sizeof(struct stat);
-        response_payload = malloc(response_payload_size);
-        if (response_payload == NULL) {
-            fprintf(stderr, "malloc: %s\n", strerror(errno));
-            goto cleanup;
-        }
+        response_payload_size = sizeof(response_payload);
         status = recv_data(&response_payload, response_payload_size);
         if (status < 0) {
             goto cleanup;
@@ -483,19 +441,19 @@ int stat(const char *restrict path, struct stat *restrict statbuf)
         memcpy(&error_code, response_payload, sizeof(int));
         memcpy(statbuf, response_payload + sizeof(int), sizeof(struct stat));
     } else { // calling stat locally
-        error_code = real_stat(path, statbuf);
+        return real_stat(path, statbuf);
     }
 
 cleanup:
     free(request_buf);
-    free(response_payload);
     return error_code;
 }
 
 int fstat(int fildes, struct stat *statbuf)
 {
     size_t request_payload_size, response_payload_size;
-    unsigned char *request_buf = NULL, *response_payload = NULL;
+    unsigned char request_buf[sizeof(size_t) + sizeof(unsigned char) + sizeof(int)];
+    unsigned char response_payload[sizeof(int) + sizeof(struct stat)];
     int status, error_code = -1;
 
     if (real_fstat == NULL) {
@@ -503,15 +461,7 @@ int fstat(int fildes, struct stat *statbuf)
     }
 
     if (fildes > INT_MAX / 2) { // calling fstat remotely
-        // send fildes to server and receive response buf and error code
-
-        // create request buffer, including request payload
-        request_payload_size = sizeof(unsigned char) + sizeof(int);
-        request_buf = malloc(sizeof(size_t) + request_payload_size);
-        if (request_buf == NULL) {
-            fprintf(stderr, "malloc: %s\n", strerror(errno));
-            goto cleanup;
-        }
+        request_payload_size = sizeof(request_buf) - sizeof(size_t);
 
         // prepend payload size and fstat function code
         memcpy(request_buf, &request_payload_size, sizeof(size_t));
@@ -521,30 +471,63 @@ int fstat(int fildes, struct stat *statbuf)
         memcpy(request_buf + sizeof(size_t) + sizeof(unsigned char), &fildes, sizeof(int));
         status = send_data(request_buf, sizeof(size_t) + request_payload_size);
         if (status < 0) {
-            goto cleanup;
+            return error_code;
         }
 
         // receive response payload
-        response_payload_size = sizeof(int) + sizeof(struct stat);
-        response_payload = malloc(response_payload_size);
-        if (response_payload == NULL) {
-            fprintf(stderr, "malloc: %s\n", strerror(errno));
-            goto cleanup;
-        }
+        response_payload_size = sizeof(response_payload);
         status = recv_data(&response_payload, response_payload_size);
         if (status < 0) {
-            goto cleanup;
+            return error_code;
         }
 
         // extract error_code and statbuf from response payload
         memcpy(&error_code, response_payload, sizeof(int));
         memcpy(statbuf, response_payload + sizeof(int), sizeof(struct stat));
-    } else {
-        error_code = real_fstat(fildes, statbuf);
+    } else { // calling fstat locally
+        return real_fstat(fildes, statbuf);
     }
 
-cleanup:
-    free(request_buf);
-    free(response_payload);
+    return error_code;
+}
+
+int fsync(int fildes)
+{
+    size_t request_payload_size, response_payload_size;
+    unsigned char request_buf[sizeof(size_t) + sizeof(unsigned char) + sizeof(int)];
+    unsigned char response_payload[sizeof(int)];
+    int status, error_code = -1;
+
+    if (real_fsync == NULL) {
+        real_fsync = dlsym(RTLD_NEXT, "fsync");
+    }
+
+    if (fildes > INT_MAX / 2) { // calling fsync remotely
+        request_payload_size = sizeof(request_buf) - sizeof(size_t);
+
+        // prepend payload size and fsync function code
+        memcpy(request_buf, &request_payload_size, sizeof(size_t));
+        request_buf[sizeof(size_t)] = FSYNC;
+
+        // send fildes
+        memcpy(request_buf + sizeof(size_t) + sizeof(unsigned char), &fildes, sizeof(int));
+        status = send_data(request_buf, sizeof(size_t) + request_payload_size);
+        if (status < 0) {
+            return error_code;
+        }
+
+        // receive response payload
+        response_payload_size = sizeof(response_payload);
+        status = recv_data(&response_payload, response_payload_size);
+        if (status < 0) {
+            return error_code;
+        }
+
+        // extract error_code from response payload
+        memcpy(&error_code, response_payload, sizeof(int));
+    } else { // calling fsync locally
+        return real_fsync(fildes);
+    }
+
     return error_code;
 }

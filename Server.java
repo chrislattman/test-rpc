@@ -3,6 +3,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.io.SyncFailedException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
@@ -90,5 +91,11 @@ public class Server implements RPCStubs {
     public long lastModifiedTime(String name) throws RemoteException {
         File file = new File(name);
         return file.lastModified();
+    }
+
+    @Override
+    public void sync(int fd) throws RemoteException, IOException, SyncFailedException {
+        RandomAccessFile file = files.get(fd);
+        file.getFD().sync();
     }
 }

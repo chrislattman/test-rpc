@@ -41,3 +41,7 @@ type SizeArgs struct {
 type LastModifiedTimeArgs struct {
 	Path string
 }
+
+type FsyncArgs struct {
+	Fildes uintptr
+}

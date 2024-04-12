@@ -1,5 +1,6 @@
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.SyncFailedException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
@@ -96,4 +97,15 @@ public interface RPCStubs extends Remote {
     long lastModifiedTime(String name) throws RemoteException;
 
     // No native method comparable to fstat for RandomAccessFile objects
+
+    /**
+     * Force all system buffers to synchronize with the underlying device.
+     * @param fd hash code of the RandomAccessFile
+     * @throws RemoteException if the remote call fails
+     * @throws IOException if an I/O error occurs
+     * @throws SyncFailedException Thrown when the buffers cannot be flushed, or
+     * because the system cannot guarantee that all the buffers have been
+     * synchronized with physical media.
+     */
+    void sync(int fd) throws RemoteException, IOException, SyncFailedException;
 }

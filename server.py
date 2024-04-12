@@ -35,6 +35,9 @@ class Server(rpyc.Service):
     def exposed_fstat(self, fildes: int) -> os.stat_result:
         return os.fstat(fildes)
 
+    def exposed_fsync(self, fildes: int) -> None:
+        os.fsync(fildes)
+
 
 def signal_handler(signum, frame) -> None:
     server.close()

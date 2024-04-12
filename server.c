@@ -30,6 +30,7 @@ enum function {
     LSEEK,
     STAT,
     FSTAT,
+    FSYNC,
 };
 
 /**
@@ -228,6 +229,25 @@ static void *client_handler(void *arg)
             // include error_code and statbuf in response payload
             memcpy(response_payload, &error_code, sizeof(int));
             memcpy(response_payload + sizeof(int), statbuf, sizeof(struct stat));
+            break;
+        case FSYNC:
+            // int fsync(int fildes);
+            // extract fildes from payload
+            memcpy(&fildes, payload + sizeof(unsigned char), sizeof(int));
+
+            // call fsync
+            error_code = fsync(INT_MAX - fildes);
+
+            // create response payload
+            response_payload_size = sizeof(int);
+            response_payload = malloc(response_payload_size);
+            if (response_payload == NULL) {
+                fprintf(stderr, "malloc: %s\n", strerror(errno));
+                goto cleanup;
+            }
+
+            // include error_code in response payload
+            memcpy(response_payload, &error_code, sizeof(int));
             break;
         default:
             fprintf(stderr, "Unsupported function\n");
