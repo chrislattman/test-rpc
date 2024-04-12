@@ -58,8 +58,7 @@ func main() {
 	}
 	fmt.Println(len(buf.Buf), string(buf.Buf))
 	lseek_args := &rpc_types.LseekArgs{Fildes: fd, Offset: 0, Whence: io.SeekStart}
-	var offset int64
-	err = client.Call("Receiver.Lseek", lseek_args, &offset)
+	err = client.Call("Receiver.Lseek", lseek_args, nil)
 	if err != nil {
 		log.Fatal("rpc.Client.Call:", err)
 	}
@@ -71,19 +70,17 @@ func main() {
 	}
 	fmt.Println(len(buf2.Buf), string(buf.Buf) + string(buf2.Buf))
 	write_args := &rpc_types.WriteArgs{Fildes: fd, Buf: []byte("word")}
-	var written int
-	err = client.Call("Receiver.Write", write_args, &written)
+	err = client.Call("Receiver.Write", write_args, nil)
 	if err != nil {
 		log.Fatal("rpc.Client.Call:", err)
 	}
 	sync_args := &rpc_types.FsyncArgs{Fildes: fd}
-	var ret int
-	err = client.Call("Receiver.Fsync", sync_args, &ret)
+	err = client.Call("Receiver.Fsync", sync_args, nil)
 	if err != nil {
 		log.Fatal("rpc.Client.Call:", err)
 	}
 	close_args := &rpc_types.CloseArgs{Fildes: fd}
-	err = client.Call("Receiver.Close", close_args, &ret)
+	err = client.Call("Receiver.Close", close_args, nil)
 	if err != nil {
 		log.Fatal("rpc.Client.Call:", err)
 	}
