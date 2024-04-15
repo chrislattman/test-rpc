@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <sys/un.h>
 
 static const char *HOSTNAME = "127.0.0.1";
 static const char *PORT_NUMBER = "5000";
@@ -74,6 +75,13 @@ static int connect_to_server(void)
         real_close = dlsym(RTLD_NEXT, "close");
     }
 
+    // To use a Unix domain socket (local socket):
+    // sock = socket(AF_UNIX, SOCK_STREAM, 0);
+    // struct sockaddr_un local;
+    // local.sun_family = AF_UNIX;
+    // strncpy(local.sun_path, "/tmp/socket.sock", sizeof(local.sun_path) - 1);
+    // connect(sock, (struct sockaddr *) &local, (socklen_t) sizeof(local));
+
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         fprintf(stderr, "socket: %s\n", strerror(errno));
         return -1;
@@ -86,7 +94,7 @@ static int connect_to_server(void)
     connection.sin_family = AF_INET;
     connection.sin_port = htons(port_number);
     connection.sin_addr.s_addr = inet_addr(host_string);
-    if (connect(sock, (struct sockaddr *) &connection, (socklen_t) sizeof(struct sockaddr)) < 0) {
+    if (connect(sock, (struct sockaddr *) &connection, (socklen_t) sizeof(connection)) < 0) {
         fprintf(stderr, "connect: %s\n", strerror(errno));
         real_close(sock);
         return -1;
@@ -128,6 +136,29 @@ static int recv_data(unsigned char **buf, size_t bytes_to_read)
     // we only call recv_data after calling send_data, so it is safe to assume
     // that we are already connected to the server
     if (recv(sock, *buf, bytes_to_read, 0) < 0) {
+        fprintf(stderr, "recv: %s\n", strerror(errno));
+        real_close(sock);
+        return -1;
+    }
+    if (real_close(sock) < 0) {
+        fprintf(stderr, "close: %s\n", strerror(errno));
+        return -1;
+    }
+    return 0;
+}
+
+/**
+ * @brief Receives bytes from the RPC server into a stack buffer.
+ *
+ * @param buf stack buffer
+ * @param bytes_to_read number of bytes to receive
+ * @return 0 on success or -1 on error
+ */
+static int recv_data_buf(unsigned char buf[], size_t bytes_to_read)
+{
+    // we only call recv_data after calling send_data, so it is safe to assume
+    // that we are already connected to the server
+    if (recv(sock, buf, bytes_to_read, 0) < 0) {
         fprintf(stderr, "recv: %s\n", strerror(errno));
         real_close(sock);
         return -1;
@@ -189,7 +220,7 @@ int open(const char *path, int oflag, ...)
 
         // receive response payload
         response_payload_size = sizeof(response_payload);
-        status = recv_data((unsigned char **) &response_payload, response_payload_size);
+        status = recv_data_buf(response_payload, response_payload_size);
         if (status < 0) {
             goto cleanup;
         }
@@ -236,7 +267,7 @@ int close(int fildes)
 
         // receive response payload
         response_payload_size = sizeof(response_payload);
-        status = recv_data((unsigned char **) &response_payload, response_payload_size);
+        status = recv_data_buf(response_payload, response_payload_size);
         if (status < 0) {
             return error_code;
         }
@@ -337,7 +368,7 @@ ssize_t write(int fildes, const void *buf, size_t nbyte)
 
         // receive response payload
         response_payload_size = sizeof(response_payload);
-        status = recv_data((unsigned char **) &response_payload, response_payload_size);
+        status = recv_data_buf(response_payload, response_payload_size);
         if (status < 0) {
             goto cleanup;
         }
@@ -383,7 +414,7 @@ off_t lseek(int fildes, off_t offset, int whence)
 
         // receive response payload
         response_payload_size = sizeof(response_payload);
-        status = recv_data((unsigned char **) &response_payload, response_payload_size);
+        status = recv_data_buf(response_payload, response_payload_size);
         if (status < 0) {
             return resulting_offset;
         }
@@ -431,7 +462,7 @@ int stat(const char *restrict path, struct stat *restrict statbuf)
 
         // receive response payload
         response_payload_size = sizeof(response_payload);
-        status = recv_data((unsigned char **) &response_payload, response_payload_size);
+        status = recv_data_buf(response_payload, response_payload_size);
         if (status < 0) {
             goto cleanup;
         }
@@ -475,7 +506,7 @@ int fstat(int fildes, struct stat *statbuf)
 
         // receive response payload
         response_payload_size = sizeof(response_payload);
-        status = recv_data((unsigned char **) &response_payload, response_payload_size);
+        status = recv_data_buf(response_payload, response_payload_size);
         if (status < 0) {
             return error_code;
         }
@@ -517,7 +548,7 @@ int fsync(int fildes)
 
         // receive response payload
         response_payload_size = sizeof(response_payload);
-        status = recv_data((unsigned char **) &response_payload, response_payload_size);
+        status = recv_data_buf(response_payload, response_payload_size);
         if (status < 0) {
             return error_code;
         }

@@ -7,3 +7,13 @@ This example leverages the `LD_PRELOAD` environment variable on Linux to hook th
 Run `export RPC_HOST=<ip-address>` and/or `export RPC_PORT=<port-number>` as environment variables to specify custom values before running a remote test.
 
 These function calls are all synchronous.
+
+These examples all communicate with servers written in the same language. Well-known language-agnostic RPC frameworks include [gRPC](https://en.wikipedia.org/wiki/GRPC) and [Cap'n Proto](https://en.wikipedia.org/wiki/Cap%27n_Proto).
+
+- These frameworks use their own data serialization formats
+    - gRPC uses [Protocol Buffers (Protobuf)](https://en.wikipedia.org/wiki/Protocol_Buffers)
+    - Another format is [FlatBuffers](https://en.wikipedia.org/wiki/FlatBuffers)
+    - These interface description languages (IDLs) necessitate their own compilers, respectively `protoc` and `flatc`, which compile .proto or .fbs schemas into files for a specified programming language
+- [JSON-RPC](https://en.wikipedia.org/wiki/JSON-RPC) is another option that doesn't use a proprietary serialization format
+
+Furthermore, transmitted data can be compressed and decomprossed using libraries such as `zlib`, `libbz2`, or `liblzma`. These libraries are used in the command-line tools `gzip`, `bzip2`, and `xz`, respectively.

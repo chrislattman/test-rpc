@@ -31,6 +31,7 @@ public class Server implements RPCStubs {
             Server obj = new Server();
             // the port in exportObject can be ephemeral, what a client connects to is the rmiregistry port
             RPCStubs stub = (RPCStubs) UnicastRemoteObject.exportObject(obj, 0);
+            // Unix domain sockets are not currently supported
             Registry registry = LocateRegistry.getRegistry(portNumber);
             registry.bind("RPCStubs", stub);
         } catch (Exception e) {

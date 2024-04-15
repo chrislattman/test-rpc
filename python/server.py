@@ -51,6 +51,8 @@ def main():
         port_number = PORT_NUMBER
     signal.signal(signal.SIGINT, signal_handler)
     global server
+    # To use a Unix domain socket (local socket):
+    # server = ThreadedServer(Server, socket_path="/tmp/domain.sock")
     server = ThreadedServer(Server, port=port_number)
     server.start()
 

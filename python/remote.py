@@ -1,5 +1,6 @@
 import os
 import rpyc
+import rpyc.utils.factory
 import time
 
 HOSTNAME = "127.0.0.1"
@@ -14,6 +15,8 @@ if port is None:
 else:
     port_number = int(port)
 
+# To use a Unix domain socket (local socket):
+# conn = rpyc.utils.factory.unix_connect("/tmp/domain.sock")
 conn = rpyc.connect(host, port_number)
 
 statbuf = conn.root.stat("test_file.txt")

@@ -10,6 +10,7 @@
 #include <signal.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <sys/un.h>
 
 static const unsigned short PORT_NUMBER = 5000;
 static int server_socket;
@@ -303,8 +304,7 @@ int main(void)
     char *port_string;
     unsigned short port_number;
     int client_socket, thread_index, reuseaddr = 1;
-    struct sockaddr_in server_connection, client_connection;
-    socklen_t client_connection_size = (socklen_t) sizeof(client_connection);
+    struct sockaddr_in server_connection;
     pthread_t thread_id[60];
     unsigned char payload_size_buf[8], *payload;
     size_t payload_size;
@@ -316,6 +316,14 @@ int main(void)
     } else {
         port_number = PORT_NUMBER;
     }
+
+    // To use a Unix domain socket (local socket):
+    // server_socket = socket(AF_UNIX, SOCK_STREAM, 0);
+    // struct sockaddr_un local;
+    // local.sun_family = AF_UNIX;
+    // strncpy(local.sun_path, "/tmp/socket.sock", sizeof(local.sun_path) - 1);
+    // bind(server_socket, (struct sockaddr *) &local, (socklen_t) sizeof(local));
+    // listen(server_socket, INT_MAX);
 
     if ((server_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         fprintf(stderr, "socket: %s\n", strerror(errno));
@@ -343,9 +351,7 @@ int main(void)
 
     thread_index = 0;
     while (1) {
-        if ((client_socket = accept(server_socket,
-                (struct sockaddr *) &client_connection,
-                &client_connection_size)) < 0) {
+        if ((client_socket = accept(server_socket, NULL, NULL)) < 0) {
             fprintf(stderr, "accept: %s\n", strerror(errno));
             goto cleanup;
         }

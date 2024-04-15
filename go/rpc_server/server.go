@@ -107,6 +107,9 @@ func main() {
 	files = make(map[uintptr]*os.File)
 	receiver := new(Receiver)
 	rpc.Register(receiver)
+
+	// To use a Unix domain socket (local socket):
+	// ln, err := net.Listen("unix", "/tmp/domain.sock")
 	ln, err := net.Listen("tcp", ":" + port)
 	if err != nil {
 		log.Fatal("listen error:", err)

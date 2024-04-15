@@ -23,6 +23,9 @@ func main() {
 	if len(port) == 0 {
 		port = PORT_NUMBER
 	}
+
+	// To use a Unix domain socket (local socket):
+	// client, err := rpc.Dial("unix", "/tmp/domain.sock")
 	client, err := rpc.Dial("tcp", host + ":" + port)
 	if err != nil {
 		log.Fatal("rpc.Dial:", err)

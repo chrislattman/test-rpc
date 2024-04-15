@@ -18,6 +18,7 @@ public class Remote {
             portNumber = Integer.parseInt(port);
         }
         try {
+            // Unix domain sockets are not currently supported
             Registry registry = LocateRegistry.getRegistry(host, portNumber);
             RPCStubs stub = (RPCStubs) registry.lookup("RPCStubs");
 
