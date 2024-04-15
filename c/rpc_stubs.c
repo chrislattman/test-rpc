@@ -189,7 +189,7 @@ int open(const char *path, int oflag, ...)
 
         // receive response payload
         response_payload_size = sizeof(response_payload);
-        status = recv_data(&response_payload, response_payload_size);
+        status = recv_data((unsigned char **) &response_payload, response_payload_size);
         if (status < 0) {
             goto cleanup;
         }
@@ -236,7 +236,7 @@ int close(int fildes)
 
         // receive response payload
         response_payload_size = sizeof(response_payload);
-        status = recv_data(&response_payload, response_payload_size);
+        status = recv_data((unsigned char **) &response_payload, response_payload_size);
         if (status < 0) {
             return error_code;
         }
@@ -337,7 +337,7 @@ ssize_t write(int fildes, const void *buf, size_t nbyte)
 
         // receive response payload
         response_payload_size = sizeof(response_payload);
-        status = recv_data(&response_payload, response_payload_size);
+        status = recv_data((unsigned char **) &response_payload, response_payload_size);
         if (status < 0) {
             goto cleanup;
         }
@@ -383,7 +383,7 @@ off_t lseek(int fildes, off_t offset, int whence)
 
         // receive response payload
         response_payload_size = sizeof(response_payload);
-        status = recv_data(&response_payload, response_payload_size);
+        status = recv_data((unsigned char **) &response_payload, response_payload_size);
         if (status < 0) {
             return resulting_offset;
         }
@@ -394,7 +394,6 @@ off_t lseek(int fildes, off_t offset, int whence)
         return real_lseek(fildes, offset, whence);
     }
 
-cleanup:
     return resulting_offset;
 }
 
@@ -432,7 +431,7 @@ int stat(const char *restrict path, struct stat *restrict statbuf)
 
         // receive response payload
         response_payload_size = sizeof(response_payload);
-        status = recv_data(&response_payload, response_payload_size);
+        status = recv_data((unsigned char **) &response_payload, response_payload_size);
         if (status < 0) {
             goto cleanup;
         }
@@ -476,7 +475,7 @@ int fstat(int fildes, struct stat *statbuf)
 
         // receive response payload
         response_payload_size = sizeof(response_payload);
-        status = recv_data(&response_payload, response_payload_size);
+        status = recv_data((unsigned char **) &response_payload, response_payload_size);
         if (status < 0) {
             return error_code;
         }
@@ -518,7 +517,7 @@ int fsync(int fildes)
 
         // receive response payload
         response_payload_size = sizeof(response_payload);
-        status = recv_data(&response_payload, response_payload_size);
+        status = recv_data((unsigned char **) &response_payload, response_payload_size);
         if (status < 0) {
             return error_code;
         }

@@ -1,3 +1,5 @@
+package javarpc;
+
 import java.rmi.registry.Registry;
 import java.io.File;
 import java.io.FileNotFoundException;

@@ -1,3 +1,5 @@
+package javarpc;
+
 import java.nio.charset.StandardCharsets;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -23,7 +25,7 @@ public class Remote {
             SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z");
             sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
             System.out.println("Last modified time: " + sdf.format(
-                new Date(stub.lastModifiedTime("test_file.txt"))));
+                new Date(stub.lastModifiedTime("../test_file.txt"))));
 
             int fd = stub.open("test_file.txt", "rw");
             byte[] buf = new byte[200];
