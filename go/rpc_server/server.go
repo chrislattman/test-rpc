@@ -10,7 +10,9 @@ import (
 )
 
 const PORT_NUMBER string = "5000"
+
 type Receiver int
+
 var files map[uintptr]*os.File
 
 func (t *Receiver) Open(args *rpc_types.OpenArgs, reply *uintptr) error {
@@ -110,7 +112,7 @@ func main() {
 
 	// To use a Unix domain socket (local socket):
 	// ln, err := net.Listen("unix", "/tmp/domain.sock")
-	ln, err := net.Listen("tcp", ":" + port)
+	ln, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		log.Fatal("listen error:", err)
 	}

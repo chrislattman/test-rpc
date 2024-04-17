@@ -21,7 +21,7 @@ func main() {
 	file.Seek(0, io.SeekStart)
 	buf2 := make([]byte, 6)
 	status, _ = file.Read(buf2)
-	fmt.Println(status, string(buf) + string(buf2))
+	fmt.Println(status, string(buf)+string(buf2))
 	file.Write([]byte("word"))
 	file.Sync()
 	file.Close()

@@ -5,9 +5,9 @@ import (
 )
 
 type OpenArgs struct {
-	Path string
+	Path  string
 	Oflag int
-	Mode fs.FileMode
+	Mode  fs.FileMode
 }
 
 type CloseArgs struct {
@@ -16,7 +16,7 @@ type CloseArgs struct {
 
 type ReadArgs struct {
 	Fildes uintptr
-	Nbyte int
+	Nbyte  int
 }
 
 type ReadRet struct {
@@ -25,7 +25,7 @@ type ReadRet struct {
 
 type WriteArgs struct {
 	Fildes uintptr
-	Buf []byte
+	Buf    []byte
 }
 
 type LseekArgs struct {

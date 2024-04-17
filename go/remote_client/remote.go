@@ -26,7 +26,7 @@ func main() {
 
 	// To use a Unix domain socket (local socket):
 	// client, err := rpc.Dial("unix", "/tmp/domain.sock")
-	client, err := rpc.Dial("tcp", host + ":" + port)
+	client, err := rpc.Dial("tcp", host+":"+port)
 	if err != nil {
 		log.Fatal("rpc.Dial:", err)
 	}
@@ -71,7 +71,7 @@ func main() {
 	if err != nil {
 		log.Fatal("rpc.Client.Call:", err)
 	}
-	fmt.Println(len(buf2.Buf), string(buf.Buf) + string(buf2.Buf))
+	fmt.Println(len(buf2.Buf), string(buf.Buf)+string(buf2.Buf))
 	write_args := &rpc_types.WriteArgs{Fildes: fd, Buf: []byte("word")}
 	err = client.Call("Receiver.Write", write_args, nil)
 	if err != nil {
