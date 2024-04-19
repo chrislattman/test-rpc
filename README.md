@@ -16,4 +16,4 @@ These examples all communicate with servers written in the same language. Well-k
     - These interface description languages (IDLs) necessitate their own compilers, respectively `protoc` and `flatc`, which compile .proto or .fbs schemas into files for a specified programming language
 - [JSON-RPC](https://en.wikipedia.org/wiki/JSON-RPC) is another option that doesn't use a proprietary serialization format
 
-Furthermore, transmitted data can be compressed and decomprossed using libraries such as `zlib`, `libbz2`, or `liblzma`. These libraries are used in the command-line tools `gzip`, `bzip2`, and `xz`, respectively.
+Furthermore, transmitted data can be compressed and decompressed using libraries such as `zlib`, `libbz2`, or `liblzma`. These libraries are used in the command-line tools `gzip`, `bzip2`, and `xz`, respectively.
