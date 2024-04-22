@@ -41,7 +41,7 @@ public class Remote {
             stub.fsync(fd);
             stub.close(fd);
         } catch (Exception e) {
-            System.err.println("TestRemote exception: " + e.toString());
+            System.err.println("Remote exception: " + e.toString());
             e.printStackTrace();
         }
     }
