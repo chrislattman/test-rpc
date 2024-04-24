@@ -8,6 +8,7 @@ int main(void)
     char date[64], buf[200] = {0};
     struct stat statbuf;
     struct tm *time_info;
+    HANDLE file;
     DWORD status;
 
     stat("test_file.txt", &statbuf); // Win32 alternative: GetFileSize
@@ -16,7 +17,7 @@ int main(void)
     strftime(date, sizeof(date), "%a, %d %b %Y %X GMT", time_info); // Win32 alternative: FileTimeToSystemTime
     printf("Last modified time: %s\n", date);
 
-    HANDLE file = CreateFileA("test_file.txt", GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    file = CreateFileA("test_file.txt", GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     ReadFile(file, buf, 5, &status, NULL);
     printf("%lu %s\n", status, buf);
     SetFilePointer(file, 0, NULL, FILE_BEGIN);
