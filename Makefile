@@ -3,6 +3,10 @@ CFLAGS=-Wall -Wextra -std=c99
 test_local: rpc_stubs local
 	LD_PRELOAD=./librpc.so ./local
 
+test_local_win:
+	gcc -Wall -Wextra -std=c99 -pedantic -o local c/winlocal.c
+	./local
+
 test_local_java: rpc_stubs_java local_java
 	java javarpc.Local
 
