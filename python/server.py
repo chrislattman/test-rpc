@@ -39,6 +39,12 @@ class Server(rpyc.Service):
     def exposed_fsync(self, fildes: int) -> None:
         os.fsync(fildes)
 
+    def exposed_rename(self, old: str, new: str) -> None:
+        os.rename(old, new)
+
+    def exposed_unlink(self, path: str) -> None:
+        os.unlink(path)
+
 
 def signal_handler(signum, frame) -> None:
     server.close()

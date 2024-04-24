@@ -30,5 +30,10 @@ public class Local {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        File rename = new File("renamed_file.txt");
+        f.renameTo(rename);
+        File deleteFile = new File("deleted_file.txt");
+        deleteFile.delete();
     }
 }

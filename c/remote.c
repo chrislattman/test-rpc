@@ -28,5 +28,8 @@ int main(void)
     fsync(fd);
     close(fd);
 
+    rename("//test_file.txt", "//renamed_file.txt");
+    unlink("//deleted_file.txt");
+
     return 0;
 }

@@ -42,4 +42,7 @@ fn main() {
     );
     file.write("word".as_bytes()).unwrap();
     file.sync_all().unwrap();
+
+    fs::rename("test_file.txt", "renamed_file.txt").unwrap();
+    fs::remove_file("deleted_file.txt").unwrap();
 }

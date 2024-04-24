@@ -100,4 +100,17 @@ public class Server implements RPCStubs {
         RandomAccessFile file = files.get(fd);
         file.getFD().sync();
     }
+
+    @Override
+    public boolean rename(String oldpath, String newpath) throws RemoteException {
+        File oldFile = new File(oldpath);
+        File newFile = new File(newpath);
+        return oldFile.renameTo(newFile);
+    }
+
+    @Override
+    public boolean unlink(String path) throws RemoteException {
+        File fileToDelete = new File(path);
+        return fileToDelete.delete();
+    }
 }

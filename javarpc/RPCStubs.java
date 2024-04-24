@@ -106,4 +106,21 @@ public interface RPCStubs extends Remote {
      * @throws IOException if an I/O error occurs
      */
     void fsync(int fd) throws RemoteException, IOException;
+
+    /**
+     * Renames the file denoted by oldpath to newpath.
+     * @param oldpath name of existing file
+     * @param newpath the new pathname
+     * @return true if the renaming succeeded
+     * @throws RemoteException if the remote call fails
+     */
+    boolean rename(String oldpath, String newpath) throws RemoteException;
+
+    /**
+     * Deletes the file denoted by path.
+     * @param path file to be deleted
+     * @return true if the file was successfully deleted
+     * @throws RemoteException if the remote call fails
+     */
+    boolean unlink(String path) throws RemoteException;
 }

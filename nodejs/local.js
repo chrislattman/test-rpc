@@ -15,3 +15,6 @@ console.log(status + " " + buf);
 fs.writeSync(fd, " word"); // need leading space for some reason
 fs.fsyncSync(fd);
 fs.closeSync(fd);
+
+fs.renameSync("test_file.txt", "renamed_file.txt");
+fs.unlinkSync("deleted_file.txt");

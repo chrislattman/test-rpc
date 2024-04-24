@@ -68,10 +68,12 @@ remote:
 	gcc $(CFLAGS) -pedantic -o remote c/remote.c
 
 remote_java:
-	javac Remote.java
+	javac javarpc/Remote.java
 
 clean:
 	rm -rf server local remote *.so javarpc/*.class target
+	mv renamed_file.txt test_file.txt
+	touch deleted_file.txt
 	pkill -9 server || true
 	pkill -9 rmiregistry || true
 	pkill -9 java || true

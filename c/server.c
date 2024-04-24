@@ -32,6 +32,8 @@ enum function {
     STAT,
     FSTAT,
     FSYNC,
+    RENAME,
+    UNLINK,
 };
 
 /**
@@ -48,7 +50,7 @@ static void *client_handler(void *arg)
 {
     thread_arg *args;
     unsigned char *payload, function_code, *response_payload = NULL;
-    const char *path;
+    const char *path, *old, *new;
     void *buf = NULL;
     size_t payload_size, path_size, nbyte, response_payload_size;
     int client_socket, oflag, fildes, whence, error_code;
@@ -238,6 +240,45 @@ static void *client_handler(void *arg)
 
             // call fsync
             error_code = fsync(INT_MAX - fildes);
+
+            // create response payload
+            response_payload_size = sizeof(int);
+            response_payload = malloc(response_payload_size);
+            if (response_payload == NULL) {
+                fprintf(stderr, "malloc: %s\n", strerror(errno));
+                goto cleanup;
+            }
+
+            // include error_code in response payload
+            memcpy(response_payload, &error_code, sizeof(int));
+            break;
+        case RENAME:
+            // int rename(const char *old, const char *new);
+            // extract old and new from payload
+            old = (char *) (payload + sizeof(unsigned char));
+            new = (char *) (payload + sizeof(unsigned char) + strlen(old) + 1);
+
+            // call rename
+            error_code = rename(old, new);
+
+            // create response payload
+            response_payload_size = sizeof(int);
+            response_payload = malloc(response_payload_size);
+            if (response_payload == NULL) {
+                fprintf(stderr, "malloc: %s\n", strerror(errno));
+                goto cleanup;
+            }
+
+            // include error_code in response payload
+            memcpy(response_payload, &error_code, sizeof(int));
+            break;
+        case UNLINK:
+            // int unlink(const char *path);
+            // extract path from payload
+            path = (char *) (payload + sizeof(unsigned char));
+
+            // call unlink
+            error_code = unlink(path);
 
             // create response payload
             response_payload_size = sizeof(int);

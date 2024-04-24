@@ -17,3 +17,6 @@ print(str(len(buf2)) + " " + buf.decode() + buf2.decode())
 os.write(fd, b"word")
 os.fsync(fd)
 os.close(fd)
+
+os.rename("test_file.txt", "renamed_file.txt")
+os.unlink("deleted_file.txt")

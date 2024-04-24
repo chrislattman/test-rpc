@@ -25,4 +25,7 @@ func main() {
 	file.Write([]byte("word"))
 	file.Sync()
 	file.Close()
+
+	os.Rename("../test_file.txt", "../renamed_file.txt")
+	os.Remove("../deleted_file.txt")
 }

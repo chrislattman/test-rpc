@@ -101,6 +101,17 @@ func (t *Receiver) Fsync(args *rpc_types.FsyncArgs, reply *int) error {
 	return file.Sync()
 }
 
+func (t *Receiver) Rename(args *rpc_types.RenameArgs, reply *int) error {
+	oldpath := args.Old
+	newpath := args.New
+	return os.Rename(oldpath, newpath)
+}
+
+func (t *Receiver) Unlink(args *rpc_types.UnlinkArgs, reply *int) error {
+	path := args.Path
+	return os.Remove(path)
+}
+
 func main() {
 	port := os.Getenv("RPC_PORT")
 	if len(port) == 0 {

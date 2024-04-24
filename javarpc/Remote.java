@@ -40,6 +40,9 @@ public class Remote {
             stub.write(fd, "word".getBytes(StandardCharsets.UTF_8), 0, 4);
             stub.fsync(fd);
             stub.close(fd);
+
+            stub.rename("test_file.txt", "renamed_file.txt");
+            stub.unlink("deleted_file.txt");
         } catch (Exception e) {
             System.err.println("Remote exception: " + e.toString());
             e.printStackTrace();

@@ -45,3 +45,12 @@ type LastModifiedTimeArgs struct {
 type FsyncArgs struct {
 	Fildes uintptr
 }
+
+type RenameArgs struct {
+	Old string
+	New string
+}
+
+type UnlinkArgs struct {
+	Path string
+}

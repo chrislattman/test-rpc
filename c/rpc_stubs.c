@@ -23,6 +23,8 @@ typedef off_t (*lseek_t)(int, off_t, int);
 typedef int (*stat_t)(const char *restrict, struct stat *restrict);
 typedef int (*fstat_t)(int, struct stat *);
 typedef int (*fsync_t)(int);
+typedef int (*rename_t)(const char *, const char *);
+typedef int (*unlink_t)(const char *);
 
 static open_t real_open = NULL;
 static close_t real_close = NULL;
@@ -32,6 +34,8 @@ static lseek_t real_lseek = NULL;
 static stat_t real_stat = NULL;
 static fstat_t real_fstat = NULL;
 static fsync_t real_fsync = NULL;
+static rename_t real_rename = NULL;
+static unlink_t real_unlink = NULL;
 
 static const char *host_string = NULL;
 static unsigned short port_number = 0;
@@ -47,6 +51,8 @@ enum function {
     STAT,
     FSTAT,
     FSYNC,
+    RENAME,
+    UNLINK,
 };
 
 /**
@@ -559,5 +565,107 @@ int fsync(int fildes)
         return real_fsync(fildes);
     }
 
+    return error_code;
+}
+
+int rename(const char *old, const char *new)
+{
+    size_t request_payload_size, old_size, new_size, response_payload_size;
+    unsigned char *request_buf = NULL;
+    unsigned char response_payload[sizeof(int)];
+    int status, error_code = -1;
+
+    if (real_rename == NULL) {
+        real_rename = dlsym(RTLD_NEXT, "rename");
+    }
+
+    if (old[0] == '/' && old[1] == '/') { // calling rename remotely
+        // create request buffer, including request payload
+        old_size = strlen(old) - 1; // minus first 2 forward slashes plus null terminator
+        new_size = strlen(new) - 1; // same for new
+        request_payload_size = sizeof(unsigned char) + old_size + new_size;
+        request_buf = malloc(sizeof(size_t) + request_payload_size);
+        if (request_buf == NULL) {
+            fprintf(stderr, "malloc: %s\n", strerror(errno));
+            goto cleanup;
+        }
+
+        // prepend payload size and rename function code
+        memcpy(request_buf, &request_payload_size, sizeof(size_t));
+        request_buf[sizeof(size_t)] = RENAME;
+
+        // send old and new
+        memcpy(request_buf + sizeof(size_t) + sizeof(unsigned char), old + 2, old_size);
+        memcpy(request_buf + sizeof(size_t) + sizeof(unsigned char) + old_size, new + 2, new_size);
+        status = send_data(request_buf, sizeof(size_t) + request_payload_size);
+        if (status < 0) {
+            goto cleanup;
+        }
+
+        // receive response payload
+        response_payload_size = sizeof(response_payload);
+        status = recv_data_buf(response_payload, response_payload_size);
+        if (status < 0) {
+            goto cleanup;
+        }
+
+        // extract error_code from response payload
+        memcpy(&error_code, response_payload, sizeof(int));
+    } else { // calling rename locally
+        return real_rename(old, new);
+    }
+
+cleanup:
+    free(request_buf);
+    return error_code;
+}
+
+int unlink(const char *path)
+{
+    size_t request_payload_size, path_size, response_payload_size;
+    unsigned char *request_buf = NULL;
+    unsigned char response_payload[sizeof(int)];
+    int status, error_code = -1;
+
+    if (real_unlink == NULL) {
+        real_unlink = dlsym(RTLD_NEXT, "unlink");
+    }
+
+    if (path[0] == '/' && path[1] == '/') { // calling unlink remotely
+        // create request buffer, including request payload
+        path_size = strlen(path) - 1; // minus first 2 forward slashes plus null terminator
+        request_payload_size = sizeof(unsigned char) + path_size;
+        request_buf = malloc(sizeof(size_t) + request_payload_size);
+        if (request_buf == NULL) {
+            fprintf(stderr, "malloc: %s\n", strerror(errno));
+            goto cleanup;
+        }
+
+        // prepend payload size and unlink function code
+        memcpy(request_buf, &request_payload_size, sizeof(size_t));
+        request_buf[sizeof(size_t)] = UNLINK;
+
+        // send path
+        memcpy(request_buf + sizeof(size_t) + sizeof(unsigned char), path + 2, path_size);
+        status = send_data(request_buf, sizeof(size_t) + request_payload_size);
+        if (status < 0) {
+            goto cleanup;
+        }
+
+        // receive response payload
+        response_payload_size = sizeof(response_payload);
+        status = recv_data_buf(response_payload, response_payload_size);
+        if (status < 0) {
+            goto cleanup;
+        }
+
+        // extract error_code from response payload
+        memcpy(&error_code, response_payload, sizeof(int));
+    } else { // calling unlink locally
+        return real_unlink(path);
+    }
+
+cleanup:
+    free(request_buf);
     return error_code;
 }

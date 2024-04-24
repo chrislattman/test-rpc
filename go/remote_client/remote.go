@@ -87,5 +87,16 @@ func main() {
 	if err != nil {
 		log.Fatal("rpc.Client.Call:", err)
 	}
+
+	rename_args := &rpc_types.RenameArgs{Old: "../test_file.txt", New: "../renamed_file.txt"}
+	err = client.Call("Receiver.Rename", rename_args, nil)
+	if err != nil {
+		log.Fatal("rpc.Client.Call:", err)
+	}
+	unlink_args := &rpc_types.UnlinkArgs{Path: "../deleted_file.txt"}
+	err = client.Call("Receiver.Unlink", unlink_args, nil)
+	if err != nil {
+		log.Fatal("rpc.Client.Call:", err)
+	}
 	client.Close()
 }
