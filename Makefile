@@ -75,8 +75,8 @@ remote_java:
 	javac javarpc/Remote.java
 
 clean:
-	rm -rf server local remote *.so javarpc/*.class target
-	mv renamed_file.txt test_file.txt
+	rm -rf server local remote *.so javarpc/*.class target renamed_file.txt
+	echo -e "Hello this is just some random text.\n1 2 3 4 5" > test_file.txt
 	touch deleted_file.txt
 	pkill -9 server || true
 	pkill -9 rmiregistry || true
