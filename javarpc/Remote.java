@@ -38,6 +38,7 @@ public class Remote {
             System.arraycopy(resp2, 0, buf, 5, 6);
             System.out.println(resp2.length + " " + new String(buf, StandardCharsets.UTF_8));
             stub.write(fd, "word".getBytes(StandardCharsets.UTF_8), 0, 4);
+            stub.ftruncate(fd, 30);
             stub.fsync(fd);
             stub.close(fd);
 

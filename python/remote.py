@@ -36,6 +36,7 @@ stub.lseek(fd, 0, os.SEEK_SET)
 buf2: bytes = stub.read(fd, 6)
 print(str(len(buf2)) + " " + buf.decode() + buf2.decode())
 stub.write(fd, b"word")
+stub.ftruncate(fd, 30)
 stub.fsync(fd)
 stub.close(fd)
 

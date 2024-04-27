@@ -1,3 +1,4 @@
+#define _GNU_SOURCE // needed for truncate and ftruncate
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -29,6 +30,8 @@ enum function {
     READ,
     WRITE,
     LSEEK,
+    TRUNCATE,
+    FTRUNCATE,
     STAT,
     FSTAT,
     FSYNC,
@@ -55,7 +58,7 @@ static void *client_handler(void *arg)
     size_t payload_size, path_size, nbyte, response_payload_size;
     int client_socket, oflag, fildes, whence, error_code;
     mode_t mode;
-    off_t offset, resulting_offset;
+    off_t offset, resulting_offset, length;
     struct stat *statbuf = NULL;
     ssize_t io_retval;
 
@@ -182,6 +185,47 @@ static void *client_handler(void *arg)
 
             // include resulting_offset in response payload
             memcpy(response_payload, &resulting_offset, sizeof(off_t));
+            break;
+        case TRUNCATE:
+            // int truncate(const char *path, off_t length);
+            // extract path and length from payload
+            path = (char *) (payload + sizeof(unsigned char));
+            path_size = strlen(path) + 1;
+            memcpy(&length, payload + sizeof(unsigned char) + path_size, sizeof(off_t));
+
+            // call truncate
+            error_code = truncate(path, length);
+
+            // create response payload
+            response_payload_size = sizeof(int);
+            response_payload = malloc(response_payload_size);
+            if (response_payload == NULL) {
+                fprintf(stderr, "malloc: %s\n", strerror(errno));
+                goto cleanup;
+            }
+
+            // include error_code in response payload
+            memcpy(response_payload, &error_code, sizeof(int));
+            break;
+        case FTRUNCATE:
+            // int ftruncate(int fildes, off_t length);
+            // extract fildes and length from payload
+            memcpy(&fildes, payload + sizeof(unsigned char), sizeof(int));
+            memcpy(&length, payload + sizeof(unsigned char) + sizeof(int), sizeof(off_t));
+
+            // call ftruncate
+            error_code = ftruncate(INT_MAX - fildes, length);
+
+            // create response payload
+            response_payload_size = sizeof(int);
+            response_payload = malloc(response_payload_size);
+            if (response_payload == NULL) {
+                fprintf(stderr, "malloc: %s\n", strerror(errno));
+                goto cleanup;
+            }
+
+            // include error_code in response payload
+            memcpy(response_payload, &error_code, sizeof(int));
             break;
         case STAT:
             // int stat(const char *restrict path, struct stat *restrict statbuf);

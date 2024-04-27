@@ -78,6 +78,12 @@ public class Server implements RPCStubs {
     }
 
     @Override
+    public void ftruncate(int fd, long length) throws RemoteException, IOException {
+        RandomAccessFile file = files.get(fd);
+        file.setLength(length);
+    }
+
+    @Override
     public long offset(int fd) throws RemoteException, IOException {
         RandomAccessFile file = files.get(fd);
         return file.getFilePointer();

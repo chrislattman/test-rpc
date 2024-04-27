@@ -75,6 +75,27 @@ func (t *Receiver) Lseek(args *rpc_types.LseekArgs, reply *int64) error {
 	return nil
 }
 
+func (t *Receiver) Truncate(args *rpc_types.TruncateArgs, reply *int64) error {
+	path := args.Path
+	length := args.Length
+	err := os.Truncate(path, length)
+	if err != nil {
+		return err
+	}
+	return nil;
+}
+
+func (t *Receiver) Ftruncate(args *rpc_types.FtruncateArgs, reply *int64) error {
+	fildes := args.Fildes
+	length := args.Length
+	file := files[fildes]
+	err := file.Truncate(length)
+	if err != nil {
+		return err
+	}
+	return nil;
+}
+
 func (t *Receiver) Size(args *rpc_types.SizeArgs, reply *int64) error {
 	path := args.Path
 	statbuf, err := os.Stat(path)

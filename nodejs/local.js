@@ -13,6 +13,7 @@ console.log(status + " " + buf);
 status = fs.readSync(fd, buf, 5, 6, 0);
 console.log(status + " " + buf);
 fs.writeSync(fd, " word"); // need leading space for some reason
+fs.ftruncateSync(fd, 30);
 fs.fsyncSync(fd);
 fs.closeSync(fd);
 

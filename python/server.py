@@ -30,6 +30,12 @@ class Server(rpyc.Service):
     def exposed_lseek(self, fildes: int, offset: int, whence: int) -> int:
         return os.lseek(fildes, offset, whence)
 
+    def exposed_truncate(self, path: str, length: int) -> None:
+        os.truncate(path, length)
+
+    def exposed_ftruncate(self, fildes: int, length: int) -> None:
+        os.ftruncate(fildes, length)
+
     def exposed_stat(self, path: str) -> os.stat_result:
         return os.stat(path)
 

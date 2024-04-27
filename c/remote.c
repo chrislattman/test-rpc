@@ -1,3 +1,4 @@
+#define _GNU_SOURCE // needed for ftruncate
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -25,6 +26,7 @@ int main(void)
     status = read(fd, buf + 5, 6);
     printf("%ld %s\n", status, buf);
     write(fd, "word", 4);
+    ftruncate(fd, 30);
     fsync(fd);
     close(fd);
 

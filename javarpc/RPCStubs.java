@@ -68,6 +68,15 @@ public interface RPCStubs extends Remote {
     void seek(int fd, long pos) throws RemoteException, IOException;
 
     /**
+     * Sets the length of this file.
+     * @param fd hash code of the RandomAccessFile
+     * @param length the desired length of the file
+     * @throws RemoteException if the remote call fails
+     * @throws IOException if an I/O error occurs
+     */
+    void ftruncate(int fd, long length) throws RemoteException, IOException;
+
+    /**
      * Returns the current offset in this file.
      * @param fd hash code of the RandomAccessFile
      * @return the offset from the beginning of the file, in bytes, at which the

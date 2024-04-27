@@ -34,6 +34,16 @@ type LseekArgs struct {
 	Whence int
 }
 
+type TruncateArgs struct {
+	Path   string
+	Length int64
+}
+
+type FtruncateArgs struct {
+	Fildes uintptr
+	Length int64
+}
+
 type SizeArgs struct {
 	Path string
 }

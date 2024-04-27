@@ -23,6 +23,7 @@ func main() {
 	status, _ = file.Read(buf2)
 	fmt.Println(status, string(buf)+string(buf2))
 	file.Write([]byte("word"))
+	file.Truncate(30)
 	file.Sync()
 	file.Close()
 

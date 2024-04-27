@@ -77,6 +77,11 @@ func main() {
 	if err != nil {
 		log.Fatal("rpc.Client.Call:", err)
 	}
+	ftruncate_args := &rpc_types.FtruncateArgs{Fildes: fd, Length: 30}
+	err = client.Call("Receiver.Ftruncate", ftruncate_args, nil)
+	if err != nil {
+		log.Fatal("rpc.Client.Call:", err)
+	}
 	sync_args := &rpc_types.FsyncArgs{Fildes: fd}
 	err = client.Call("Receiver.Fsync", sync_args, nil)
 	if err != nil {

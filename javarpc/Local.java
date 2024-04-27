@@ -25,6 +25,7 @@ public class Local {
             status = file.read(buf, 5, 6);
             System.out.println(status + " " + new String(buf, StandardCharsets.UTF_8));
             file.write("word".getBytes(StandardCharsets.UTF_8), 0, 4);
+            file.setLength(30);
             file.getFD().sync();
             file.close();
         } catch (IOException e) {

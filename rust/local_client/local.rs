@@ -41,6 +41,7 @@ fn main() {
         from_utf8(&buf2).unwrap()
     );
     file.write("word".as_bytes()).unwrap();
+    file.set_len(30).unwrap();
     file.sync_all().unwrap();
 
     rename("test_file.txt", "renamed_file.txt").unwrap();

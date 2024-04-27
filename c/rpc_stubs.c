@@ -1,3 +1,4 @@
+#define _GNU_SOURCE // needed for truncate and ftruncate
 #include <fcntl.h>
 #include <stdarg.h>
 #include <unistd.h>
@@ -20,6 +21,8 @@ typedef int (*close_t)(int);
 typedef ssize_t (*read_t)(int, void *, size_t);
 typedef ssize_t (*write_t)(int, const void *, size_t);
 typedef off_t (*lseek_t)(int, off_t, int);
+typedef int (*truncate_t)(const char *, off_t);
+typedef int (*ftruncate_t)(int, off_t);
 typedef int (*stat_t)(const char *restrict, struct stat *restrict);
 typedef int (*fstat_t)(int, struct stat *);
 typedef int (*fsync_t)(int);
@@ -31,6 +34,8 @@ static close_t real_close = NULL;
 static read_t real_read = NULL;
 static write_t real_write = NULL;
 static lseek_t real_lseek = NULL;
+static truncate_t real_truncate = NULL;
+static ftruncate_t real_ftruncate = NULL;
 static stat_t real_stat = NULL;
 static fstat_t real_fstat = NULL;
 static fsync_t real_fsync = NULL;
@@ -48,6 +53,8 @@ enum function {
     READ,
     WRITE,
     LSEEK,
+    TRUNCATE,
+    FTRUNCATE,
     STAT,
     FSTAT,
     FSYNC,
@@ -432,6 +439,99 @@ off_t lseek(int fildes, off_t offset, int whence)
     }
 
     return resulting_offset;
+}
+
+int truncate(const char *path, off_t length)
+{
+    size_t request_payload_size, path_size, response_payload_size;
+    unsigned char *request_buf = NULL;
+    unsigned char response_payload[sizeof(int)];
+    int status, error_code = -1;
+
+    if (real_truncate == NULL) {
+        real_truncate = dlsym(RTLD_NEXT, "truncate");
+    }
+
+    if (path[0] == '/' && path[1] == '/') { // calling truncate remotely
+        // create request buffer, including request payload
+        path_size = strlen(path) - 1; // minus first 2 forward slashes plus null terminator
+        request_payload_size = sizeof(unsigned char) + path_size + sizeof(off_t);
+        request_buf = malloc(sizeof(size_t) + request_payload_size);
+        if (request_buf == NULL) {
+            fprintf(stderr, "malloc: %s\n", strerror(errno));
+            goto cleanup;
+        }
+
+        // prepend payload size and truncate function code
+        memcpy(request_buf, &request_payload_size, sizeof(size_t));
+        request_buf[sizeof(size_t)] = TRUNCATE;
+
+        // send path and length
+        memcpy(request_buf + sizeof(size_t) + sizeof(unsigned char), path + 2, path_size);
+        memcpy(request_buf + sizeof(size_t) + sizeof(unsigned char) + path_size, &length, sizeof(off_t));
+        status = send_data(request_buf, sizeof(size_t) + request_payload_size);
+        if (status < 0) {
+            goto cleanup;
+        }
+
+        // receive response payload
+        response_payload_size = sizeof(response_payload);
+        status = recv_data_buf(response_payload, response_payload_size);
+        if (status < 0) {
+            goto cleanup;
+        }
+
+        // extract error_code from response payload
+        memcpy(&error_code, response_payload, sizeof(int));
+    } else { // calling truncate locally
+        return real_truncate(path, length);
+    }
+
+cleanup:
+    free(request_buf);
+    return error_code;
+}
+
+int ftruncate(int fildes, off_t length)
+{
+    size_t request_payload_size, response_payload_size;
+    unsigned char request_buf[sizeof(size_t) + sizeof(unsigned char) + sizeof(int) + sizeof(off_t)];
+    unsigned char response_payload[sizeof(int)];
+    int status, error_code = -1;
+
+    if (real_ftruncate == NULL) {
+        real_ftruncate = dlsym(RTLD_NEXT, "ftruncate");
+    }
+
+    if (fildes > INT_MAX / 2) { // calling ftruncate remotely
+        request_payload_size = sizeof(request_buf) - sizeof(size_t);
+
+        // prepend payload size and ftruncate function code
+        memcpy(request_buf, &request_payload_size, sizeof(size_t));
+        request_buf[sizeof(size_t)] = FTRUNCATE;
+
+        // send fildes and length
+        memcpy(request_buf + sizeof(size_t) + sizeof(unsigned char), &fildes, sizeof(int));
+        memcpy(request_buf + sizeof(size_t) + sizeof(unsigned char) + sizeof(int), &length, sizeof(off_t));
+        status = send_data(request_buf, sizeof(size_t) + request_payload_size);
+        if (status < 0) {
+            return error_code;
+        }
+
+        // receive response payload
+        response_payload_size = sizeof(response_payload);
+        status = recv_data_buf(response_payload, response_payload_size);
+        if (status < 0) {
+            return error_code;
+        }
+
+        // extract error_code from response payload
+        memcpy(&error_code, response_payload, sizeof(int));
+    } else { // calling ftruncate locally
+        return real_ftruncate(fildes, length);
+    }
+
+    return error_code;
 }
 
 int stat(const char *restrict path, struct stat *restrict statbuf)
