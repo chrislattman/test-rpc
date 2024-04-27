@@ -1,5 +1,5 @@
 use std::{
-    fs::{metadata, remove_file, rename, OpenOptions},
+    fs::{metadata, read_dir, remove_file, rename, OpenOptions},
     io::{Read, Seek, SeekFrom::Start, Write},
     str::from_utf8,
     time::SystemTime,
@@ -46,4 +46,16 @@ fn main() {
 
     rename("test_file.txt", "renamed_file.txt").unwrap();
     remove_file("deleted_file.txt").unwrap();
+
+    let namelist = read_dir(".").unwrap();
+    for entry in namelist {
+        let file = entry.unwrap();
+        let filetype = file.file_type().unwrap();
+        if filetype.is_dir() {
+            println!("{}/", file.file_name().into_string().unwrap());
+        }
+        if filetype.is_file() {
+            println!("{}", file.file_name().into_string().unwrap());
+        }
+    }
 }

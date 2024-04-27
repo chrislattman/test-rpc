@@ -29,4 +29,14 @@ func main() {
 
 	os.Rename("../test_file.txt", "../renamed_file.txt")
 	os.Remove("../deleted_file.txt")
+
+	namelist, _ := os.ReadDir("..")
+	for _, entry := range namelist {
+		if entry.IsDir() {
+			fmt.Println(entry.Name() + "/")
+		}
+		if entry.Type().IsRegular() {
+			fmt.Println(entry.Name())
+		}
+	}
 }

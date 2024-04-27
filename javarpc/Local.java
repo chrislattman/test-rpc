@@ -36,5 +36,15 @@ public class Local {
         f.renameTo(rename);
         File deleteFile = new File("deleted_file.txt");
         deleteFile.delete();
+
+        File[] namelist = new File(".").listFiles();
+        for (File entry : namelist) {
+            if (entry.isDirectory()) {
+                System.out.println(entry.getName() + "/");
+            }
+            if (entry.isFile()) {
+                System.out.println(entry.getName());
+            }
+        }
     }
 }

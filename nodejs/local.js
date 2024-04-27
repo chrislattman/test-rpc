@@ -19,3 +19,12 @@ fs.closeSync(fd);
 
 fs.renameSync("test_file.txt", "renamed_file.txt");
 fs.unlinkSync("deleted_file.txt");
+
+fs.readdirSync(".", {withFileTypes: true}).forEach((entry) => {
+    if (entry.isDirectory()) {
+        console.log(entry.name + "/");
+    }
+    if (entry.isFile()) {
+        console.log(entry.name);
+    }
+});

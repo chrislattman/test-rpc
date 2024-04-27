@@ -21,3 +21,10 @@ os.close(fd)
 
 os.rename("test_file.txt", "renamed_file.txt")
 os.unlink("deleted_file.txt")
+
+namelist = os.scandir(".")
+for entry in namelist:
+    if entry.is_dir():
+        print(entry.name + "/")
+    if entry.is_file():
+        print(entry.name)

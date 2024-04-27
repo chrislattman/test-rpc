@@ -4,14 +4,17 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <dirent.h>
+#include <stdlib.h>
 
 int main(void)
 {
-    char date[64], buf[200] = {0};
+    char date[64], buf[200] = {0}, *entry;
     struct stat statbuf;
     struct tm *time_info;
-    int fd;
+    int fd, i, n;
     ssize_t status;
+    struct dirent **namelist;
 
     stat("test_file.txt", &statbuf);
     printf("File size (in bytes): %ld\n", statbuf.st_size);
@@ -32,6 +35,18 @@ int main(void)
 
     rename("test_file.txt", "renamed_file.txt");
     unlink("deleted_file.txt");
+
+    n = scandir(".", &namelist, NULL, alphasort);
+    for (i = 0; i < n; i++) {
+        stat(namelist[i]->d_name, &statbuf);
+        if (S_ISDIR(statbuf.st_mode)) {
+            printf("%s/\n", namelist[i]->d_name);
+        }
+        if (S_ISREG(statbuf.st_mode)) {
+            printf("%s\n", namelist[i]->d_name);
+        }
+    }
+    free(namelist);
 
     return 0;
 }
