@@ -10,6 +10,7 @@
 int main(void)
 {
     char date[64], buf[200] = {0}, *entry;
+    const char *name;
     struct stat statbuf;
     struct tm *time_info;
     int fd, i, n;
@@ -38,12 +39,13 @@ int main(void)
 
     n = scandir(".", &namelist, NULL, alphasort);
     for (i = 0; i < n; i++) {
-        stat(namelist[i]->d_name, &statbuf);
+        name = namelist[i]->d_name;
+        stat(name, &statbuf);
         if (S_ISDIR(statbuf.st_mode)) {
-            printf("%s/\n", namelist[i]->d_name);
+            printf("%s/\n", name);
         }
         if (S_ISREG(statbuf.st_mode)) {
-            printf("%s\n", namelist[i]->d_name);
+            printf("%s\n", name);
         }
     }
     free(namelist);
