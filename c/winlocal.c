@@ -10,6 +10,7 @@ int main(void)
     struct tm *time_info;
     HANDLE file;
     DWORD status;
+    WIN32_FIND_DATA ffd;
 
     stat("test_file.txt", &statbuf); // Win32 alternative: GetFileSize
     printf("File size (in bytes): %ld\n", statbuf.st_size);
@@ -34,6 +35,16 @@ int main(void)
 
     MoveFileA("test_file.txt", "renamed_file.txt");
     DeleteFileA("deleted_file.txt");
+
+    file = FindFirstFileA(".\\*", &ffd);
+    do {
+        if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+            printf("%s/\n", ffd.cFileName);
+        }
+        if (ffd.dwFileAttributes & FILE_ATTRIBUTE_ARCHIVE) { // for some reason it's not FILE_ATTRIBUTE_NORMAL
+            printf("%s\n", ffd.cFileName);
+        }
+    } while (FindNextFileA(file, &ffd));
 
     return 0;
 }
