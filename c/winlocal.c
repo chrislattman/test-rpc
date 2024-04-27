@@ -24,6 +24,11 @@ int main(void)
     ReadFile(file, buf + 5, 6, &status, NULL);
     printf("%lu %s\n", status, buf);
     WriteFile(file, "word", 4, &status, NULL);
+
+    // equivalent to truncating the file to 30 bytes
+    SetFilePointer(file, 30, NULL, FILE_BEGIN);
+    SetEndOfFile(file);
+
     FlushFileBuffers(file);
     CloseHandle(file);
 
