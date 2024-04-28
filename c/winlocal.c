@@ -37,14 +37,17 @@ int main(void)
     DeleteFileA("deleted_file.txt");
 
     file = FindFirstFileA(".\\*", &ffd);
-    do {
-        if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-            printf("%s/\n", ffd.cFileName);
-        }
-        if (ffd.dwFileAttributes & FILE_ATTRIBUTE_ARCHIVE) { // for some reason it's not FILE_ATTRIBUTE_NORMAL
-            printf("%s\n", ffd.cFileName);
-        }
-    } while (FindNextFileA(file, &ffd));
+    if (file != INVALID_HANDLE_VALUE) {
+        do {
+            if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+                printf("%s/\n", ffd.cFileName);
+            }
+            if (ffd.dwFileAttributes & FILE_ATTRIBUTE_ARCHIVE) { // for some reason it's not FILE_ATTRIBUTE_NORMAL
+                printf("%s\n", ffd.cFileName);
+            }
+        } while (FindNextFileA(file, &ffd));
+        FindClose(file);
+    }
 
     return 0;
 }
