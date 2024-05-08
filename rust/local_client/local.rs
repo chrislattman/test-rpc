@@ -59,3 +59,7 @@ fn main() {
         }
     }
 }
+
+// To use Unix domain sockets:
+// Server: https://doc.rust-lang.org/std/os/unix/net/struct.UnixListener.html
+// Client: https://doc.rust-lang.org/std/os/unix/net/struct.UnixStream.html

@@ -28,3 +28,7 @@ fs.readdirSync(".", {withFileTypes: true}).forEach((entry) => {
         console.log(entry.name);
     }
 });
+
+// To use Unix domain sockets:
+// Server: https://nodejs.org/api/net.html#serverlistenpath-backlog-callback
+// Client: https://nodejs.org/api/net.html#netcreateconnectionpath-connectlistener
