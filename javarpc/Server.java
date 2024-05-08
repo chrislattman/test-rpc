@@ -31,7 +31,9 @@ public class Server implements RPCStubs {
             Server obj = new Server();
             // the port in exportObject can be ephemeral, what a client connects to is the rmiregistry port
             RPCStubs stub = (RPCStubs) UnicastRemoteObject.exportObject(obj, 0);
-            // Unix domain sockets are not currently supported
+            // Unix domain sockets are not currently supported for RMI
+            // In general, to setup a Unix domain socket server:
+            // https://www.baeldung.com/java-unix-domain-socket#receivingMessages
             Registry registry = LocateRegistry.getRegistry(portNumber);
             registry.bind("RPCStubs", stub);
         } catch (Exception e) {

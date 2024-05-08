@@ -67,6 +67,7 @@ def main():
     global server
     # To use a Unix domain socket (local socket):
     # server = ThreadedServer(Server, socket_path="/tmp/domain.sock")
+    # In general, Unix domain sockets are constructed like IP sockets
     server = ThreadedServer(Server, port=port_number)
     server.start()
 

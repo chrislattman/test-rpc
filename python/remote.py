@@ -18,6 +18,7 @@ else:
 
 # To use a Unix domain socket (local socket):
 # conn = rpyc.utils.factory.unix_connect("/tmp/domain.sock")
+# In general, connecting to Unix domain sockets is like connecting to IP sockets
 conn = rpyc.connect(host, port_number)
 stub = conn.root
 

@@ -18,7 +18,9 @@ public class Remote {
             portNumber = Integer.parseInt(port);
         }
         try {
-            // Unix domain sockets are not currently supported
+            // Unix domain sockets are not currently supported for RMI
+            // In general, to setup a Unix domain socket client:
+            // https://www.baeldung.com/java-unix-domain-socket#sendingMessages
             Registry registry = LocateRegistry.getRegistry(host, portNumber);
             RPCStubs stub = (RPCStubs) registry.lookup("RPCStubs");
 
