@@ -13,8 +13,8 @@
 #include <arpa/inet.h>
 #include <sys/un.h>
 
-static const char *HOSTNAME = "127.0.0.1";
-static const char *PORT_NUMBER = "5000";
+static const char *const HOSTNAME = "127.0.0.1";
+static const char *const PORT_NUMBER = "5000";
 
 typedef int (*open_t)(const char *, int, ...);
 typedef int (*close_t)(int);
