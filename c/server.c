@@ -78,9 +78,12 @@ static void *client_handler(void *arg)
             memcpy(&oflag, payload + sizeof(unsigned char) + path_size, sizeof(int));
             if (oflag == O_CREAT) {
                 memcpy(&mode, payload + sizeof(unsigned char) + path_size + sizeof(int), sizeof(mode_t));
-                fildes = INT_MAX - open(path, oflag, mode);
+                fildes = open(path, oflag, mode);
             } else {
-                fildes = INT_MAX - open(path, oflag);
+                fildes = open(path, oflag);
+            }
+            if (fildes >= 0) {
+                fildes = INT_MAX - fildes;
             }
 
             // create response payload
