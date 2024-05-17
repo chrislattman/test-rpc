@@ -1,17 +1,17 @@
 #define _GNU_SOURCE // needed for truncate and ftruncate
-#include <fcntl.h>
-#include <stdarg.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <dlfcn.h>
-#include <limits.h>
-#include <stdio.h>
-#include <errno.h>
-#include <string.h>
-#include <stdlib.h>
-#include <sys/socket.h>
 #include <arpa/inet.h>
+#include <dlfcn.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <limits.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
 #include <sys/un.h>
+#include <unistd.h>
 
 static const char *const HOSTNAME = "127.0.0.1";
 static const char *const PORT_NUMBER = "5000";

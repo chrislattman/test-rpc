@@ -1,17 +1,17 @@
 #define _GNU_SOURCE // needed for truncate and ftruncate
+#include <arpa/inet.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <limits.h>
+#include <pthread.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <limits.h>
 #include <sys/socket.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <errno.h>
-#include <pthread.h>
-#include <signal.h>
-#include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/un.h>
+#include <unistd.h>
 
 static const unsigned short PORT_NUMBER = 5000;
 static int server_socket;

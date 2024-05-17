@@ -1,9 +1,9 @@
 #define _GNU_SOURCE // needed for ftruncate
-#include <stdio.h>
 #include <fcntl.h>
-#include <unistd.h>
+#include <stdio.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <unistd.h>
 
 int main(void)
 {
