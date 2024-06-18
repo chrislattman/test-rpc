@@ -9,7 +9,7 @@
 
 int main(void)
 {
-    char date[64], buf[200] = {0}, *entry;
+    char date[64], buf[200] = {0};
     const char *name;
     struct stat statbuf;
     struct tm *time_info;

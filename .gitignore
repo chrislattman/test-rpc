@@ -6,3 +6,4 @@ remote
 .DS_Store
 .vscode/
 target/
+node_modules/
