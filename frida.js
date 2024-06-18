@@ -2,10 +2,10 @@ const os = Process.platform.toString();
 let libc;
 if (os === "darwin") {
     libc = "libSystem.B.dylib";
-} else if (os === "linux") { // linux
-    libc = "libc.so";
+} else if (os === "linux") {
+    libc = "libc.so.6";
 } else {
-    throw new Error("Unsupported platform");
+    throw new Error(`Unsupported platform: ${os}`);
 }
 // Windows libc is msvcrt.dll but obviously not POSIX-compliant
 
@@ -38,7 +38,12 @@ Interceptor.attach(
         },
         onLeave: (retVal) => {
             if (!ran) {
-                const stSize = statbuf.add(96).readS64();
+                let stSize;
+                if (os === "darwin") {
+                    stSize = statbuf.add(96).readS64();
+                } else { // linux
+                    stSize = statbuf.add(48).readS64();
+                }
                 const errCode = retVal.toInt32();
                 console.log(`FRIDA: statbuf.st_size: ${stSize}`);
                 console.log(`FRIDA: stat return value: ${errCode}`);
