@@ -23,18 +23,23 @@ Interceptor.attach(
     }
 );
 
+// if using in multiple functions (no need for this.newPath):
+// const newPath = Memory.allocUtf8String("test_file1.txt");
 let statbuf = ptr(0);
 let ran = false;
 Interceptor.attach(
     Module.getExportByName(libc, "stat64"),
     {
-        onEnter: (args) => {
-            const path = args[0].readUtf8String();
+        onEnter(args) {
+            const arg0 = args[0];
+            const path = arg0.readUtf8String();
+            // const newPath = Memory.allocUtf8String("test_file1.txt");
+            // this.newPath = newPath;
             if (path === "test_file.txt") {
                 console.log(`FRIDA: stat path: ${path}`);
                 statbuf = args[1];
             }
-            // args[0] = ptr("test_file1.txt"); // to modify the argument
+            // arg0 = newPath; // to modify the argument
         },
         onLeave: (retVal) => {
             if (!ran) {
