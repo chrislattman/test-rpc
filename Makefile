@@ -30,7 +30,7 @@ test_local_js:
 	node nodejs/local.js
 
 test_local_rust:
-	cargo run --bin local
+	cargo run -q --bin local
 
 test_remote: rpc_stubs remote test_server
 	LD_PRELOAD=./librpc.so ./remote
