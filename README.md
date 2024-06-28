@@ -8,7 +8,15 @@ This example leverages the `LD_PRELOAD` environment variable on Linux to hook th
 
 Run `export RPC_HOST=<ip-address>` and/or `export RPC_PORT=<port-number>` as environment variables to specify custom values before running a remote test.
 
-These function calls are all synchronous.
+These function calls are all synchronous. With that said, there is varied support for asynchronous (async) file I/O in the major programming languages:
+
+- Java has the [`AsynchronousFileChannel`](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/nio/channels/AsynchronousFileChannel.html) class
+- Python doesn't have native async file I/O support, but there are the [`aiofile`](https://pypi.org/project/aiofile/) and [`aiofiles`](https://pypi.org/project/aiofiles/) packages
+- [Node.js](https://nodejs.org/api/fs.html) has two different APIs that support async file I/O: the original callback API and the newer Promises API
+- Rust doesn't have native async file I/O support, but the popular [tokio](https://docs.rs/tokio/latest/tokio/io/index.html) crate offers it
+- C:
+    - POSIX C has [`aio.h`](https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/aio.h.html)
+    - Win32 C allows you to pass the `FILE_FLAG_OVERLAPPED` flag to [`CreateFileA`](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea#synchronous_and_asynchronous_i_o_handles), which requires an `OVERLAPPED` structure to be allocated by the application and its pointer passed in to `ReadFile` and `WriteFile`
 
 These examples all communicate with servers written in the same language. Well-known language-agnostic RPC frameworks include [gRPC](https://en.wikipedia.org/wiki/GRPC) and [Cap'n Proto](https://en.wikipedia.org/wiki/Cap%27n_Proto).
 
