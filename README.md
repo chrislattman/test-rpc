@@ -4,7 +4,8 @@ Use the provided Makefile to test the [RPC](https://en.wikipedia.org/wiki/Remote
 
 This example leverages the `LD_PRELOAD` environment variable on Linux to hook the standard C library functions `open`, `close`, `read`, `write`, `lseek`, `truncate`, `ftruncate`, `stat`, `fstat`, `fsync`, `rename`, and `unlink` using a [shim](https://en.wikipedia.org/wiki/Shim_(computing)) (rpc_hooks.c). When a filename starts with "//", the function (`open`, `truncate`, `stat`, `rename`, or `unlink`) arguments are marshaled/serialized and sent via TCP to a remote RPC server to be unmarshaled/deserialized and executed there. Very large file descriptors (> 1,073,741,823) are assumed to have originated remotely, and functions that are passed in such file descriptors are likewise executed remotely, with their function arguments marshaled/serialized before transmission. Results from each of the function calls are marshaled/serialized in the server and sent back to the client via TCP, where they are subsequently unmarshaled/deserialized.
 
-- On macOS, the `DYLD_INSERT_LIBRARIES` environment variable serves the same purpose as `LD_PRELOAD` on Linux; however, the executable needs to be compiled using Apple clang with the flag `-flat_namespace`
+- On macOS, the `DYLD_INSERT_LIBRARIES` environment variable serves the same purpose as `LD_PRELOAD` on Linux; however, the executable needs to be compiled using Apple clang with the flag `-flat_namespace` (this is due to `DYLD_FORCE_FLAT_NAMESPACE=1` no longer having any effect)
+    - An alternative method for macOS is outlined in [`shim.c`](shim.c) (hooking the `puts` function)
 
 Run `export RPC_HOST=<ip-address>` and/or `export RPC_PORT=<port-number>` as environment variables to specify custom values before running a remote test.
 
