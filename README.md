@@ -6,6 +6,7 @@ This example leverages the `LD_PRELOAD` environment variable on Linux to hook th
 
 - On macOS, the `DYLD_INSERT_LIBRARIES` environment variable serves the same purpose as `LD_PRELOAD` on Linux; however, the executable needs to be compiled using Apple clang with the flag `-flat_namespace` (this is due to `DYLD_FORCE_FLAT_NAMESPACE=1` no longer having any effect)
     - An alternative method for macOS is outlined in [`shim.c`](shim.c) (hooking the `puts` function)
+    - A similar shim for the C++ `<<` operator for `std::ostream` can't be made due to C++ Standard Library restrictions
 
 Run `export RPC_HOST=<ip-address>` and/or `export RPC_PORT=<port-number>` as environment variables to specify custom values before running a remote test.
 
