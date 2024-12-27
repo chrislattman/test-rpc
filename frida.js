@@ -8,17 +8,27 @@ if (os === "darwin") {
     throw new Error(`Unsupported platform: ${os}`);
 }
 // Windows libc is msvcrt.dll but obviously not POSIX-compliant
+// Read this page for parsing C++ strings: https://learnfrida.info/intermediate_usage/#stdstring
 
-Interceptor.attach(
+// Detaches open library call listener once specific file is opened
+let openListener = Interceptor.attach(
     Module.getExportByName(libc, "open"),
     {
-        onEnter: (args) => {
+        onEnter(args) {
+            this.removeHook = false;
             const path = args[0].readUtf8String();
+            if (path === "test_file.txt") {
+                this.removeHook = true;
+            }
             console.log(`FRIDA: open path: ${path}`);
         },
-        onLeave: (retVal) => {
+        onLeave(retVal) {
             const fd = retVal.toInt32();
             console.log(`FRIDA: open return value: ${fd}`);
+            if (this.removeHook) {
+                console.log("FRIDA: removing instrumentation for 'open'");
+                openListener.detach();
+            }
         }
     }
 );
@@ -33,6 +43,7 @@ Interceptor.attach(
         onEnter(args) {
             const arg0 = args[0];
             const path = arg0.readUtf8String();
+            // this.originalPath = arg0;
             // const newPath = Memory.allocUtf8String("test_file1.txt");
             // this.newPath = newPath;
             if (path === "test_file.txt") {
@@ -41,7 +52,8 @@ Interceptor.attach(
             }
             // arg0 = newPath; // to modify the argument
         },
-        onLeave: (retVal) => {
+        onLeave(retVal) {
+            // can access this.originalPath from here to see any changes made
             if (!ran) {
                 let stSize;
                 if (os === "darwin") {
