@@ -1,10 +1,11 @@
 import frida
+from typing import Dict, Optional
 
 msgs = []
 
-def on_message(message: str, data: bytes):
+def on_message(message: Dict, data: Optional[bytes]):
     # Might need json.loads(message) to convert into Python object
-    msgs.append(message)
+    msgs.append(message["payload"])
 
 device = frida.get_local_device()
 pid = device.spawn("./local")
