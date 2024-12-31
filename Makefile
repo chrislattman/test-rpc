@@ -13,6 +13,9 @@ test_local: rpc_stubs local
 test_local_frida: local
 	frida -f ./local -l frida.js || true
 
+test_local_frida_python: local
+	python3 frida_control_script.py
+
 test_local_win:
 	gcc -Wall -Wextra -std=c99 -pedantic -o local c/winlocal.c
 	./local
