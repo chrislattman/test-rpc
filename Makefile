@@ -1,12 +1,5 @@
 CFLAGS=-Wall -Wextra -std=c99
 
-OS=$(shell echo `uname`)
-ifeq ($(OS),Darwin)
-ECHO=gecho
-else
-ECHO=echo
-endif
-
 test_local: rpc_stubs local
 	LD_PRELOAD=./librpc.so ./local
 
@@ -89,7 +82,7 @@ remote_java:
 
 clean:
 	rm -rf server local remote *.so javarpc/*.class target renamed_file.txt
-	$(ECHO) -e "Hello this is just some random text.\n1 2 3 4 5" > test_file.txt
+	echo "Hello this is just some random text.\n1 2 3 4 5" > test_file.txt
 	touch deleted_file.txt
 	pkill -9 server || true
 	pkill -9 rmiregistry || true
