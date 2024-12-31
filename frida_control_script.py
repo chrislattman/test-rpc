@@ -10,7 +10,7 @@ device = frida.get_local_device()
 pid = device.spawn("./local")
 session = device.attach(pid)
 
-code = open("other_frida_script.js").read()
+code = open("frida_instrumentation_script.js").read()
 script = session.create_script(code)
 script.on("message", on_message)
 script.load()
