@@ -15,7 +15,7 @@ script = session.create_script(code)
 script.on("message", on_message)
 script.load()
 
-device.resume()
+device.resume(pid)
 
 while not session.is_detached:
     pass
