@@ -4,7 +4,7 @@ from typing import Dict, Optional
 msgs = []
 
 def on_message(message: Dict, data: Optional[bytes]):
-    # Might need json.loads(message) to convert into Python object
+    # Might need json.loads(message["payload"]) to convert into Python object
     msgs.append(message["payload"])
 
 device = frida.get_local_device()
