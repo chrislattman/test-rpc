@@ -20,6 +20,15 @@ let openListener = Interceptor.attach(
             if (path === "test_file.txt") {
                 this.removeHook = true;
             }
+            // module name can be found by iterating over results of Process.enumerateModules()
+            const baseaddr = Process.getModuleByName("local").base;
+            console.log(`FRIDA: local base address: ${baseaddr}`);
+            // console.log(`FRIDA: local base address: ${Module.getBaseAddress("local")}`); // alternative method
+            console.log(`FRIDA: open return address: ${this.returnAddress}`);
+            // this offset should be the return address for the open library call in local.c
+            // as shown in objdump (100000ca6 on macOS x64, 14fa on Linux x64)
+            const offset = this.returnAddress - baseaddr;
+            console.log(`FRIDA: offset: 0x${offset.toString(16)}`);
             console.log(`FRIDA: open path: ${path}`);
         },
         onLeave(retVal) {
