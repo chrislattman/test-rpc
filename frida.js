@@ -25,6 +25,8 @@ let openListener = Interceptor.attach(
             console.log(`FRIDA: local base address: ${baseaddr}`);
             // console.log(`FRIDA: local base address: ${Module.getBaseAddress("local")}`); // alternative method
             console.log(`FRIDA: open return address: ${this.returnAddress}`);
+            // alternative way of getting open return address:
+            // console.log(`FRIDA: (%rsp) = 0x${this.context.rsp.readU64().toString(16)}`);
             // this offset should be the return address for the open library call in local.c
             // as shown in objdump (100000ca6 on macOS x64, 14fa on Linux x64)
             const offset = this.returnAddress - baseaddr;
