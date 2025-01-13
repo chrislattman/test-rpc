@@ -27,8 +27,10 @@ let openListener = Interceptor.attach(
             console.log(`FRIDA: open return address: ${this.returnAddress}`);
             // alternative way of getting open return address:
             // console.log(`FRIDA: (%rsp) = 0x${this.context.rsp.readU64().toString(16)}`);
+            // console.log(`FRIDA: x30 = ${this.context.lr}`); // for arm64
             // offset should be the relative return address for the open library call in local.c
-            // as shown in objdump (100000ca6 on macOS x64, 14fa on Linux x64)
+            // as shown in objdump -d local
+            // (100000ca6 on macOS x64, 100003c60 on macOS arm64, 14fa on Linux x64, d98 on Linux arm64)
             const offset = this.returnAddress - baseaddr;
             console.log(`FRIDA: offset: 0x${offset.toString(16)}`);
             console.log(`FRIDA: open path: ${path}`);
