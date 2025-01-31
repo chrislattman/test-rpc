@@ -28,6 +28,9 @@ test_local_js:
 test_local_rust:
 	cargo run -q --bin local
 
+test_local_csharp:
+	dotnet run --project csharp
+
 test_remote: rpc_stubs remote test_server
 	LD_PRELOAD=./librpc.so ./remote
 
@@ -81,7 +84,7 @@ remote_java:
 	javac javarpc/Remote.java
 
 clean:
-	rm -rf server local remote *.so javarpc/*.class target renamed_file.txt
+	rm -rf server local remote *.so javarpc/*.class target renamed_file.txt csharp/bin csharp/obj
 	echo "Hello this is just some random text.\n1 2 3 4 5" > test_file.txt
 	touch deleted_file.txt
 	pkill -9 server || true

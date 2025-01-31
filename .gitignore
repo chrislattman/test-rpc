@@ -7,3 +7,5 @@ remote
 .vscode/
 target/
 node_modules/
+csharp/bin/
+csharp/obj/
