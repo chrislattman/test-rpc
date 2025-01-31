@@ -1,6 +1,9 @@
 import frida
 from typing import Dict, Optional
 
+# Use this script to follow subprocesses:
+# https://github.com/frida/frida-python/blob/main/examples/child_gating.py
+
 msgs = []
 
 def on_message(message: Dict, data: Optional[bytes]):
