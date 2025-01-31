@@ -18,12 +18,15 @@ f.MoveTo("renamed_file.txt");
 File.Delete("deleted_file.txt");
 
 var namelist = Directory.EnumerateFileSystemEntries(".");
-foreach (var name in namelist) {
+foreach (var name in namelist)
+{
     FileAttributes attributes = File.GetAttributes(name);
-    if ((attributes & FileAttributes.Directory) == FileAttributes.Directory) {
+    if ((attributes & FileAttributes.Directory) == FileAttributes.Directory)
+    {
         Console.WriteLine(name[2..] + "/");
     }
-    if ((attributes & FileAttributes.Normal) == FileAttributes.Normal) {
+    if ((attributes & FileAttributes.Normal) == FileAttributes.Normal)
+    {
         Console.WriteLine(name[2..]);
     }
 }
