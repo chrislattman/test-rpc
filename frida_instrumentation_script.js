@@ -7,7 +7,7 @@ if (os === "darwin") {
 } else {
     throw new Error(`Unsupported platform: ${os}`);
 }
-// Windows libc is kernel32.dll but obviously not POSIX-compliant
+// Windows libc is KERNEL32.dll but obviously not POSIX-compliant
 // Read this page for parsing C++ strings: https://learnfrida.info/intermediate_usage/#stdstring
 
 // Detaches open library call listener once specific file is opened
