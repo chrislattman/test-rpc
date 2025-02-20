@@ -4,9 +4,15 @@ Use the provided Makefile to test the [RPC](https://en.wikipedia.org/wiki/Remote
 
 This example leverages the `LD_PRELOAD` environment variable on Linux to hook the standard C library functions `open`, `close`, `read`, `write`, `lseek`, `truncate`, `ftruncate`, `stat`, `fstat`, `fsync`, `rename`, and `unlink` using a [shim](https://en.wikipedia.org/wiki/Shim_(computing)) (rpc_hooks.c). When a filename starts with "//", the function (`open`, `truncate`, `stat`, `rename`, or `unlink`) arguments are marshaled/serialized and sent via TCP to a remote RPC server to be unmarshaled/deserialized and executed there. Very large file descriptors (> 1,073,741,823) are assumed to have originated remotely, and functions that are passed in such file descriptors are likewise executed remotely, with their function arguments marshaled/serialized before transmission. Results from each of the function calls are marshaled/serialized in the server and sent back to the client via TCP, where they are subsequently unmarshaled/deserialized.
 
-- On macOS, the `DYLD_INSERT_LIBRARIES` environment variable serves the same purpose as `LD_PRELOAD` on Linux; however, the executable needs to be compiled using Apple clang with the flag `-flat_namespace` (this is due to `DYLD_FORCE_FLAT_NAMESPACE=1` no longer having any effect)
-    - An alternative method for macOS is outlined in [`shim.c`](shim.c) (hooking the `puts` function)
+- On macOS, the `DYLD_INSERT_LIBRARIES` environment variable serves the same purpose as `LD_PRELOAD` on Linux; however, the target executable needs to be compiled using Apple clang with the flag `-flat_namespace` (this is due to `DYLD_FORCE_FLAT_NAMESPACE=1` no longer having any effect)
+    - An alternative method for macOS is outlined in [`shim.c`](c/shim.c) (hooking the `puts` function)
     - A similar shim for the C++ `<<` operator for `std::ostream` can't be made due to C++ Standard Library restrictions
+
+- On Windows, there is no `LD_PRELOAD` analog. However, Windows gives you the ability to allocate memory to another process, as well as write to that memory and run code in it. To achieve similar functionality as `LD_PRELOAD` on Windows, you have to hook the Import Address Table.
+    - This is outlined in [`winshim.c`](c/winshim.c), which is injected by a separate file [`dll_injector.c`](c/dll_injector.c)
+    - This process can be partially replicated on Linux by hooking the Global Offset Table, or on macOS by hooking the Lazy Symbol Pointer table
+    - However, there is no similar API in Linux or macOS that allows you to allocate memory to another process
+    - Using the `LD_PRELOAD`/`DYLD_INSERT_LIBRARIES` approach is more reliable (and more straightforward) on those platforms
 
 Run `export RPC_HOST=<ip-address>` and/or `export RPC_PORT=<port-number>` as environment variables to specify custom values before running a remote test.
 
