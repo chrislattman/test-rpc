@@ -1,5 +1,5 @@
 use std::{
-    fs::{metadata, read_dir, remove_file, rename, OpenOptions},
+    fs::{OpenOptions, metadata, read_dir, remove_file, rename},
     io::{Read, Seek, SeekFrom::Start, Write},
     str::from_utf8,
     time::SystemTime,
@@ -21,7 +21,7 @@ fn main() {
         .unwrap()
         .to_rfc2822()
         .replace(" +0000", "");
-    println!("Last modified time: {}", date);
+    println!("Last modified time: {date}");
 
     let mut file = OpenOptions::new()
         .read(true)
@@ -40,7 +40,7 @@ fn main() {
         from_utf8(&buf).unwrap(),
         from_utf8(&buf2).unwrap()
     );
-    file.write("word".as_bytes()).unwrap();
+    file.write_all("word".as_bytes()).unwrap();
     file.set_len(30).unwrap();
     file.sync_all().unwrap();
 
