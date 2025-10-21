@@ -19,13 +19,23 @@ Run `export RPC_HOST=<ip-address>` and/or `export RPC_PORT=<port-number>` as env
 These function calls are all synchronous. With that said, there is varied support for asynchronous (async) file I/O in the major programming languages:
 
 - Java has the [`AsynchronousFileChannel`](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/nio/channels/AsynchronousFileChannel.html) class
-- Python doesn't have native async file I/O support, but there are the [`aiofile`](https://pypi.org/project/aiofile/) and [`aiofiles`](https://pypi.org/project/aiofiles/) packages
-- [Node.js](https://nodejs.org/api/fs.html) has two different APIs that support async file I/O: the original callback API and the newer Promises API
-- Rust doesn't have native async file I/O support, but the popular [tokio](https://docs.rs/tokio/latest/tokio/io/index.html) crate offers it
 - C# offers [asynchronous file I/O](https://learn.microsoft.com/en-us/dotnet/standard/io/asynchronous-file-i-o)
 - C:
     - POSIX C has [`aio.h`](https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/aio.h.html)
     - Win32 C allows you to pass the `FILE_FLAG_OVERLAPPED` flag to [`CreateFileA`](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea#synchronous_and_asynchronous_i_o_handles), which requires an `OVERLAPPED` structure to be allocated by the application and its pointer passed in to `ReadFile` and `WriteFile`
+- Python doesn't have native async file I/O support, but there are the [`aiofile`](https://pypi.org/project/aiofile/) and [`aiofiles`](https://pypi.org/project/aiofiles/) packages
+- [Node.js](https://nodejs.org/api/fs.html) has two different APIs that support async file I/O: the original callback API and the newer Promises API
+- Rust doesn't have native async file I/O support, but the popular [tokio](https://docs.rs/tokio/latest/tokio/io/index.html) crate offers it
+
+Scatter/gather file I/O is where multiple buffers are either written into a file, or read into from a file, in a single function call, reducing the overhead that comes from multiple system calls. There is support for scatter/gather file I/O in multiple languages:
+
+- Java has the [`FileChannel`](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/nio/channels/FileChannel.html) class
+- C:
+    - POSIX C has `writev` and `readv`
+    - Win32 C has `WriteFileGather` and `ReadFileScatter`
+- Python exposes `os.writev` and `os.readv`
+- Go has [`Buffers.WriteTo`](https://pkg.go.dev/net#Buffers.WriteTo) and [`Buffers.Read`](https://pkg.go.dev/net#Buffers.Read)
+- Rust has [`write_vectored`](https://doc.rust-lang.org/std/io/trait.Write.html#method.write_vectored) and [`read_vectored`](https://doc.rust-lang.org/std/io/trait.Read.html#method.read_vectored)
 
 These examples all communicate with servers written in the same language. Well-known language-agnostic RPC frameworks include [gRPC](https://en.wikipedia.org/wiki/GRPC) and [Cap'n Proto](https://en.wikipedia.org/wiki/Cap%27n_Proto).
 
