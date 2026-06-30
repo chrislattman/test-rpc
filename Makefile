@@ -83,8 +83,16 @@ remote:
 remote_java:
 	javac javarpc/Remote.java
 
+test_sd_bus:
+	gcc -o sd_bus_server c/sd_bus_server.c -lsystemd
+	gcc -o sd_bus_client c/sd_bus_client.c -lsystemd
+	./sd_bus_server &
+	./sd_bus_client
+	# Expected output of busctl command: "x 42"
+	busctl --user call com.example.MySimpleCalculator /com/example/MySimpleCalculator com.example.MySimpleCalculator Multiply xx 6 7
+
 clean:
-	rm -rf server local remote *.so javarpc/*.class target renamed_file.txt csharp/bin csharp/obj
+	rm -rf server local remote *.so javarpc/*.class target renamed_file.txt csharp/bin csharp/obj sd_bus_*
 	echo "Hello this is just some random text.\n1 2 3 4 5" > test_file.txt
 	touch deleted_file.txt
 	pkill -9 server || true
@@ -92,3 +100,4 @@ clean:
 	pkill -9 java || true
 	pkill -9 python3 || true
 	pkill -9 go || true
+	pkill -9 sd_bus_server || true
