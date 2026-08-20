@@ -40,9 +40,10 @@ Scatter/gather file I/O is where multiple buffers are either written into a file
 These examples all communicate with servers written in the same language. Well-known language-agnostic RPC frameworks include [gRPC](https://en.wikipedia.org/wiki/GRPC) and [Cap'n Proto](https://en.wikipedia.org/wiki/Cap%27n_Proto).
 
 - These frameworks use their own data serialization formats
-    - gRPC uses [Protocol Buffers (Protobuf)](https://en.wikipedia.org/wiki/Protocol_Buffers)
-    - Another format is [FlatBuffers](https://en.wikipedia.org/wiki/FlatBuffers)
-    - These interface description languages (IDLs) necessitate their own compilers, respectively `protoc` and `flatc`, which compile .proto or .fbs schemas into files for a specified programming language
+    - gRPC uses [Protocol Buffers (Protobuf)](https://en.wikipedia.org/wiki/Protocol_Buffers), but you could technically use [FlatBuffers](https://en.wikipedia.org/wiki/FlatBuffers) instead of Protobuf
+    - Protobuf is compact but not zero-copy (allows arbitrary reads without parsing the entire message), but FlatBuffers and Cap'n Proto are both zero-copy (but are larger over the wire)
+    - Cap'n Proto is a more seamless version of gRPC + FlatBuffers
+    - These interface description languages (IDLs) necessitate their own compilers, respectively `protoc`, `flatc`, and `capnp`, which compile .proto or .fbs or .capnp schemas into files for a specified programming language
 - [JSON-RPC](https://en.wikipedia.org/wiki/JSON-RPC) is another option that doesn't use a proprietary serialization format
 
 Furthermore, transmitted data can be compressed and decompressed using libraries such as `zlib`, `libbz2`, `liblzma`, or `libzstd`. These libraries are used in the command-line tools `gzip`, `bzip2`, `xz`, and `zstd`, respectively.
