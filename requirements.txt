@@ -1,0 +1,2 @@
+frida-tools==14.10.4
+rpyc==6.0.2
