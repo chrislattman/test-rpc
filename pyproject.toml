@@ -1,0 +1,9 @@
+[project]
+name = "test-rpc"
+version = "0.1.0"
+requires-python = ">=3.11"
+
+dependencies = [
+    "frida-tools==14.10.4",
+    "rpyc==6.0.2",
+]
