@@ -117,6 +117,37 @@ static int connect_to_server(void)
 }
 
 /**
+ * @brief Receives exactly n bytes. A single recv() can return fewer bytes
+ * than requested (e.g. for large reads), so keep calling it until everything
+ * has arrived.
+ *
+ * @param buf destination buffer
+ * @param n number of bytes to receive
+ * @return 0 on success, or -1 on error or if the server closed the connection early
+ */
+static int recv_all(unsigned char *buf, size_t n)
+{
+    ssize_t received;
+
+    while (n > 0) {
+        if ((received = recv(sock, buf, n, 0)) < 0) {
+            if (errno == EINTR) {
+                continue;
+            }
+            fprintf(stderr, "recv: %s\n", strerror(errno));
+            return -1;
+        }
+        if (received == 0) {
+            fprintf(stderr, "recv: connection closed before full response arrived\n");
+            return -1;
+        }
+        buf += received;
+        n -= (size_t) received;
+    }
+    return 0;
+}
+
+/**
  * @brief Sends bytes to the RPC server.
  *
  * @param buf byte buffer
@@ -125,13 +156,25 @@ static int connect_to_server(void)
  */
 static int send_data(unsigned char *buf, size_t buf_size)
 {
+    ssize_t sent;
+
     if (connect_to_server() < 0) {
         return -1;
     }
-    if (send(sock, buf, buf_size, 0) < 0) {
-        fprintf(stderr, "send: %s\n", strerror(errno));
-        real_close(sock);
-        return -1;
+    // A single send() can send fewer bytes than requested, so loop
+    while (buf_size > 0) {
+        // MSG_NOSIGNAL: if the server went away, return an error instead of
+        // killing the host program with SIGPIPE
+        if ((sent = send(sock, buf, buf_size, MSG_NOSIGNAL)) < 0) {
+            if (errno == EINTR) {
+                continue;
+            }
+            fprintf(stderr, "send: %s\n", strerror(errno));
+            real_close(sock);
+            return -1;
+        }
+        buf += sent;
+        buf_size -= (size_t) sent;
     }
     // not closing the socket on successful send until recv_data is called
     return 0;
@@ -148,8 +191,7 @@ static int recv_data(unsigned char **buf, size_t bytes_to_read)
 {
     // we only call recv_data after calling send_data, so it is safe to assume
     // that we are already connected to the server
-    if (recv(sock, *buf, bytes_to_read, 0) < 0) {
-        fprintf(stderr, "recv: %s\n", strerror(errno));
+    if (recv_all(*buf, bytes_to_read) < 0) {
         real_close(sock);
         return -1;
     }
@@ -171,8 +213,7 @@ static int recv_data_buf(unsigned char buf[], size_t bytes_to_read)
 {
     // we only call recv_data after calling send_data, so it is safe to assume
     // that we are already connected to the server
-    if (recv(sock, buf, bytes_to_read, 0) < 0) {
-        fprintf(stderr, "recv: %s\n", strerror(errno));
+    if (recv_all(buf, bytes_to_read) < 0) {
         real_close(sock);
         return -1;
     }

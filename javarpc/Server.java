@@ -8,17 +8,40 @@ import java.io.RandomAccessFile;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Main server loop for RPC server.
  */
 public class Server implements RPCStubs {
     private static final int PORT_NUMBER = 1099;
-    private HashMap<Integer, RandomAccessFile> files;
+    // RMI can run calls from different clients on different threads at the
+    // same time, so the map must be thread-safe
+    private final ConcurrentHashMap<Integer, RandomAccessFile> files;
+    // hashCode() isn't guaranteed to be unique, so two open files could get
+    // the same descriptor; hand out descriptors from a counter instead
+    private final AtomicInteger nextFd;
 
     public Server() {
-        files = new HashMap<>();
+        files = new ConcurrentHashMap<>();
+        nextFd = new AtomicInteger(3);
+    }
+
+    /**
+     * Looks up an open file by descriptor.
+     *
+     * @param fd file descriptor
+     * @return the open file
+     * @throws IOException if fd isn't an open file descriptor
+     */
+    private RandomAccessFile getFile(int fd) throws IOException {
+        RandomAccessFile file = files.get(fd);
+        if (file == null) {
+            throw new IOException("Bad file descriptor " + fd);
+        }
+        return file;
     }
 
     public static void main(String args[]) {
@@ -45,49 +68,58 @@ public class Server implements RPCStubs {
     @Override
     public int open(String name, String mode) throws RemoteException, FileNotFoundException {
         RandomAccessFile file = new RandomAccessFile(name, mode);
-        files.put(file.hashCode(), file);
-        return file.hashCode();
+        int fd = nextFd.getAndIncrement();
+        files.put(fd, file);
+        return fd;
     }
 
     @Override
     public void close(int fd) throws RemoteException, IOException {
-        RandomAccessFile file = files.get(fd);
+        RandomAccessFile file = files.remove(fd);
+        if (file == null) {
+            throw new IOException("Bad file descriptor " + fd);
+        }
         file.close();
-        files.remove(fd);
     }
 
     @Override
     public byte[] read(int fd, int len) throws RemoteException, IOException {
-        RandomAccessFile file = files.get(fd);
+        if (len < 0) {
+            throw new IOException("Negative read length " + len);
+        }
+        RandomAccessFile file = getFile(fd);
         byte[] result = new byte[len];
         int status = file.read(result);
         if (status < 0) {
             result = null;
+        } else if (status < len) {
+            // Only return the bytes actually read, not the rest of the zeroed buffer
+            result = Arrays.copyOf(result, status);
         }
         return result;
     }
 
     @Override
     public void write(int fd, byte[] b, int off, int len) throws RemoteException, IOException {
-        RandomAccessFile file = files.get(fd);
+        RandomAccessFile file = getFile(fd);
         file.write(b, off, len);
     }
 
     @Override
     public void seek(int fd, long pos) throws RemoteException, IOException {
-        RandomAccessFile file = files.get(fd);
+        RandomAccessFile file = getFile(fd);
         file.seek(pos);
     }
 
     @Override
     public void ftruncate(int fd, long length) throws RemoteException, IOException {
-        RandomAccessFile file = files.get(fd);
+        RandomAccessFile file = getFile(fd);
         file.setLength(length);
     }
 
     @Override
     public long offset(int fd) throws RemoteException, IOException {
-        RandomAccessFile file = files.get(fd);
+        RandomAccessFile file = getFile(fd);
         return file.getFilePointer();
     }
 
@@ -105,7 +137,7 @@ public class Server implements RPCStubs {
 
     @Override
     public void fsync(int fd) throws RemoteException, IOException {
-        RandomAccessFile file = files.get(fd);
+        RandomAccessFile file = getFile(fd);
         file.getFD().sync();
     }
 
